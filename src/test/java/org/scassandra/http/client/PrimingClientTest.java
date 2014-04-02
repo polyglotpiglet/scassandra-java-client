@@ -44,7 +44,7 @@ public class PrimingClientTest {
         //then
         verify(postRequestedFor(urlEqualTo("/prime"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":[{\"name\":\"Chris\"}]}")));
+                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"rows\":[{\"name\":\"Chris\"}]}}")));
     }
 
     @Test(expected = PrimeFailedException.class)

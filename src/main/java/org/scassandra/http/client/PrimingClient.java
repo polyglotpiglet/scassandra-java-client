@@ -28,6 +28,7 @@ public class PrimingClient {
     }
 
     public void prime(PrimingRequest primeRequest) throws PrimeFailedException {
+        LOGGER.info("Prime request {}", primeRequest);
         HttpPost httpPost = new HttpPost("http://" + host + ":" + port + "/prime");
         String jsonAsString = gson.toJson(primeRequest);
         httpPost.setEntity(new StringEntity(jsonAsString, ContentType.APPLICATION_JSON));
