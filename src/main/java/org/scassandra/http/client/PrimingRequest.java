@@ -22,9 +22,18 @@ public class PrimingRequest {
 
     private static class Then {
         private List<Map<String, String>> rows;
+        private Result result;
 
         private Then(List<Map<String, String>> rows) {
             this.rows = rows;
+            this.result = Result.success;
         }
+    }
+
+    public static enum Result {
+        success,
+        read_request_timeout,
+        unavailable,
+        write_request_timeout
     }
 }
