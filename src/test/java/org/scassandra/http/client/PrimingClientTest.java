@@ -26,7 +26,7 @@ public class PrimingClientTest {
         //then
         verify(postRequestedFor(urlEqualTo("/prime"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":[]}")));
+                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"rows\":[],\"result\":\"success\"}}")));
     }
 
     @Test
@@ -45,6 +45,48 @@ public class PrimingClientTest {
         verify(postRequestedFor(urlEqualTo("/prime"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"rows\":[{\"name\":\"Chris\"}],\"result\":\"success\"}}")));
+    }
+
+    @Test
+    public void testPrimingReadRequestTimeout() {
+        //given
+        stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
+        PrimingClient pc = new PrimingClient("localhost", PORT);
+        PrimingRequest pr = new PrimingRequest("select * from people", PrimingRequest.Result.read_request_timeout);
+        //when
+        pc.prime(pr);
+        //then
+        verify(postRequestedFor(urlEqualTo("/prime"))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"result\":\"read_request_timeout\"}}")));
+    }
+
+    @Test
+    public void testPrimingUnavailableException() {
+        //given
+        stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
+        PrimingClient pc = new PrimingClient("localhost", PORT);
+        PrimingRequest pr = new PrimingRequest("select * from people", PrimingRequest.Result.unavailable);
+        //when
+        pc.prime(pr);
+        //then
+        verify(postRequestedFor(urlEqualTo("/prime"))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"result\":\"unavailable\"}}")));
+    }
+
+    @Test
+    public void testPrimingWriteRequestTimeout() {
+        //given
+        stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
+        PrimingClient pc = new PrimingClient("localhost", PORT);
+        PrimingRequest pr = new PrimingRequest("select * from people", PrimingRequest.Result.write_request_timeout);
+        //when
+        pc.prime(pr);
+        //then
+        verify(postRequestedFor(urlEqualTo("/prime"))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"result\":\"write_request_timeout\"}}")));
     }
 
     @Test(expected = PrimeFailedException.class)

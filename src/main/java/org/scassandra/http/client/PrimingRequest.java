@@ -12,6 +12,11 @@ public class PrimingRequest {
         this.then = new Then(rows);
     }
 
+    public PrimingRequest(String when, Result result) {
+        this.when = when;
+        this.then = new Then(result);
+    }
+
     @Override
     public String toString() {
         return "PrimingRequest{" +
@@ -27,6 +32,9 @@ public class PrimingRequest {
         private Then(List<Map<String, String>> rows) {
             this.rows = rows;
             this.result = Result.success;
+        }
+        private Then(Result result) {
+            this.result = result;
         }
     }
 
