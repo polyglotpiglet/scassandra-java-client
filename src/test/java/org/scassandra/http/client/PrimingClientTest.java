@@ -20,7 +20,7 @@ public class PrimingClientTest {
         //given
         stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
         PrimingClient pc = new PrimingClient("localhost", PORT);
-        PrimingRequest pr = new PrimingRequest("select * from people", Collections.emptyList());
+        PrimingRequest pr = new PrimingRequest("select * from people", Collections.<Map<String, String>>emptyList());
         //when
         pc.prime(pr);
         //then
@@ -94,7 +94,7 @@ public class PrimingClientTest {
         //given
         stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(500)));
         PrimingClient pc = new PrimingClient("localhost", PORT);
-        PrimingRequest pr = new PrimingRequest("select * from people", Collections.emptyList());
+        PrimingRequest pr = new PrimingRequest("select * from people", Collections.<Map<String, String>>emptyList());
         //when
         pc.prime(pr);
         //then
