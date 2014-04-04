@@ -50,7 +50,7 @@ public class ActivityClientTest {
         //given
         stubFor(get(urlEqualTo("/query"))
                 .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
-                //when
+        //when
         underTest.retrieveQueries();
         //then
 
@@ -84,6 +84,45 @@ public class ActivityClientTest {
                 .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.retrieveConnections();
+        //then
+    }
+
+    @Test
+    public void testDeletingOfConnectionHistory() {
+        //given
+        //when
+        underTest.clearConnections();
+        //then
+        verify(deleteRequestedFor(urlEqualTo("/connection")));
+    }
+
+    @Test(expected = ActivityRequestFailed.class)
+    public void testDeletingOfConnectionHistoryFailing() {
+        //given
+        stubFor(delete(urlEqualTo("/connection"))
+                .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        //when
+        underTest.clearConnections();
+        //then
+
+    }
+
+    @Test
+    public void testDeletingOfQueryHistory() {
+        //given
+        //when
+        underTest.clearQueries();
+        //then
+        verify(deleteRequestedFor(urlEqualTo("/query")));
+    }
+
+    @Test(expected = ActivityRequestFailed.class)
+    public void testDeletingOfQueryHistoryFailing() {
+        //given
+        stubFor(delete(urlEqualTo("/query"))
+                .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        //when
+        underTest.clearQueries();
         //then
 
     }

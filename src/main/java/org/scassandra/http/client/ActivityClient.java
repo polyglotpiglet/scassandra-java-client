@@ -2,6 +2,7 @@ package org.scassandra.http.client;
 
 import com.google.gson.Gson;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -11,25 +12,26 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class ActivityClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActivityClient.class);
 
-    private String host;
-    private int port;
     private Gson gson = new Gson();
     private CloseableHttpClient httpClient = HttpClients.createDefault();
+    private String connectionUrl;
+    private String queryUrl;
 
     public ActivityClient(String host, int port) {
-        this.host = host;
-        this.port = port;
+        this.connectionUrl = "http://" + host + ":" + port + "/connection";
+        this.queryUrl = "http://" + host + ":" + port + "/query";
+
+
     }
 
     public List<Query> retrieveQueries() {
-        HttpGet get = new HttpGet("http://" + host + ":" + port + "/query");
+        HttpGet get = new HttpGet(queryUrl);
         try {
             CloseableHttpResponse response = httpClient.execute(get);
             String body = EntityUtils.toString(response.getEntity());
@@ -44,7 +46,7 @@ public class ActivityClient {
     }
 
     public List<Connection> retrieveConnections() {
-        HttpGet get = new HttpGet("http://" + host + ":" + port + "/connection");
+        HttpGet get = new HttpGet(connectionUrl);
         try {
             CloseableHttpResponse response = httpClient.execute(get);
             String body = EntityUtils.toString(response.getEntity());
@@ -54,6 +56,26 @@ public class ActivityClient {
             return Arrays.asList(queries);
         } catch (IOException e) {
             LOGGER.info("Request for queries failed", e);
+            throw new ActivityRequestFailed();
+        }
+    }
+
+    public void clearConnections() {
+        HttpDelete delete = new HttpDelete(connectionUrl);
+        try {
+            httpClient.execute(delete);
+        } catch (IOException e) {
+           LOGGER.warn("clearing of connections failed",e);
+            throw new ActivityRequestFailed();
+        }
+    }
+
+    public void clearQueries() {
+        HttpDelete delete = new HttpDelete(queryUrl);
+        try {
+            httpClient.execute(delete);
+        } catch (IOException e) {
+            LOGGER.warn("clearing of connections failed",e);
             throw new ActivityRequestFailed();
         }
     }
