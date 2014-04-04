@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ActivityClient {
@@ -35,6 +36,21 @@ public class ActivityClient {
             LOGGER.debug("Received response {}", body);
             Query[] queries = (Query[]) gson.fromJson(body, (Class) Query[].class);
             LOGGER.debug("Parsed queries {}", Arrays.toString(queries));
+            return Arrays.asList(queries);
+        } catch (IOException e) {
+            LOGGER.info("Request for queries failed", e);
+            throw new ActivityRequestFailed();
+        }
+    }
+
+    public List<Connection> retrieveConnections() {
+        HttpGet get = new HttpGet("http://" + host + ":" + port + "/connection");
+        try {
+            CloseableHttpResponse response = httpClient.execute(get);
+            String body = EntityUtils.toString(response.getEntity());
+            LOGGER.debug("Received response {}", body);
+            Connection[] queries = (Connection[]) gson.fromJson(body, (Class) Connection[].class);
+            LOGGER.debug("Parsed connections {}", Arrays.toString(queries));
             return Arrays.asList(queries);
         } catch (IOException e) {
             LOGGER.info("Request for queries failed", e);

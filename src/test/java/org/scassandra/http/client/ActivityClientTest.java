@@ -46,7 +46,7 @@ public class ActivityClientTest {
     }
 
     @Test(expected = ActivityRequestFailed.class)
-    public void testErrorDuringRetrieval() {
+    public void testErrorDuringQueryRetrieval() {
         //given
         stubFor(get(urlEqualTo("/query"))
                 .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
@@ -55,4 +55,37 @@ public class ActivityClientTest {
         //then
 
     }
+
+    @Test
+    public void testRetrievalOfZeroConnections() {
+        //given
+        stubFor(get(urlEqualTo("/connection")).willReturn(aResponse().withBody("[]")));
+        //when
+        List<Connection> connections = underTest.retrieveConnections();
+        //then
+        assertEquals(0, connections.size());
+    }
+
+    @Test
+    public void testRetrievalOfOnePlusConnections() {
+        //given
+        stubFor(get(urlEqualTo("/connection")).willReturn(aResponse().withBody("[{\"result\":\"success\"}]")));
+        //when
+        List<Connection> connections = underTest.retrieveConnections();
+        //then
+        assertEquals(1, connections.size());
+        assertEquals("success", connections.get(0).getResult());
+    }
+
+    @Test(expected = ActivityRequestFailed.class)
+    public void testErrorDuringConnectionRetrieval() {
+        //given
+        stubFor(get(urlEqualTo("/connection"))
+                .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        //when
+        underTest.retrieveConnections();
+        //then
+
+    }
+
 }
