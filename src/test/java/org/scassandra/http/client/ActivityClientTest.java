@@ -87,6 +87,16 @@ public class ActivityClientTest {
         //then
     }
 
+    @Test(expected = ActivityRequestFailed.class, timeout = 2500)
+    public void testServerHanging() {
+        //given
+        stubFor(get(urlEqualTo("/connection"))
+                .willReturn(aResponse().withFixedDelay(5000)));
+        //when
+        underTest.retrieveConnections();
+        //then
+    }
+
     @Test
     public void testDeletingOfConnectionHistory() {
         //given

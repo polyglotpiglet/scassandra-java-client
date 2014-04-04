@@ -1,10 +1,12 @@
 package org.scassandra.http.client;
 
 import com.google.gson.Gson;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -24,6 +26,13 @@ public class ActivityClient {
     private String queryUrl;
 
     public ActivityClient(String host, int port) {
+        RequestConfig.Builder requestBuilder = RequestConfig.custom();
+        requestBuilder = requestBuilder.setConnectTimeout(500);
+        requestBuilder = requestBuilder.setConnectionRequestTimeout(500);
+        requestBuilder = requestBuilder.setSocketTimeout(500);
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        builder.setDefaultRequestConfig(requestBuilder.build());
+        httpClient = builder.build();
         this.connectionUrl = "http://" + host + ":" + port + "/connection";
         this.queryUrl = "http://" + host + ":" + port + "/query";
 
@@ -47,6 +56,7 @@ public class ActivityClient {
 
     public List<Connection> retrieveConnections() {
         HttpGet get = new HttpGet(connectionUrl);
+
         try {
             CloseableHttpResponse response = httpClient.execute(get);
             String body = EntityUtils.toString(response.getEntity());
@@ -63,7 +73,8 @@ public class ActivityClient {
     public void clearConnections() {
         HttpDelete delete = new HttpDelete(connectionUrl);
         try {
-            httpClient.execute(delete);
+            CloseableHttpResponse httpResponse = httpClient.execute(delete);
+            EntityUtils.consumeQuietly(httpResponse.getEntity());
         } catch (IOException e) {
            LOGGER.warn("clearing of connections failed",e);
             throw new ActivityRequestFailed();
@@ -73,7 +84,8 @@ public class ActivityClient {
     public void clearQueries() {
         HttpDelete delete = new HttpDelete(queryUrl);
         try {
-            httpClient.execute(delete);
+            CloseableHttpResponse httpResponse = httpClient.execute(delete);
+            EntityUtils.consumeQuietly(httpResponse.getEntity());
         } catch (IOException e) {
             LOGGER.warn("clearing of connections failed",e);
             throw new ActivityRequestFailed();

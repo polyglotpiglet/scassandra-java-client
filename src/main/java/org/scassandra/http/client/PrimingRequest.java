@@ -36,6 +36,14 @@ public class PrimingRequest {
         private Then(Result result) {
             this.result = result;
         }
+
+        @Override
+        public String toString() {
+            return "Then{" +
+                    "rows=" + rows +
+                    ", result=" + result +
+                    '}';
+        }
     }
 
     public static enum Result {
