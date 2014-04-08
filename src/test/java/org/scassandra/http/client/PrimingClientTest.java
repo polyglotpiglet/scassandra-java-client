@@ -102,7 +102,6 @@ public class PrimingClientTest {
         //when
         underTest.prime(pr);
         //then
-
     }
 
 }

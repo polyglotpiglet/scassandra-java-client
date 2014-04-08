@@ -37,12 +37,13 @@ public class ActivityClientTest {
     @Test
     public void testRetrievalOfASingleQuery() {
         //given
-        stubFor(get(urlEqualTo("/query")).willReturn(aResponse().withBody("[{\"query\":\"select * from people\"}]")));
+        stubFor(get(urlEqualTo("/query")).willReturn(aResponse().withBody("[{\"query\":\"select * from people\",\"consistency\":\"TWO\"}]")));
         //when
         List<Query> queries = underTest.retrieveQueries();
         //then
         assertEquals(1, queries.size());
         assertEquals("select * from people", queries.get(0).getQuery());
+        assertEquals("TWO", queries.get(0).getConsistency());
     }
 
     @Test(expected = ActivityRequestFailed.class)
