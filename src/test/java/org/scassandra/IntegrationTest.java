@@ -20,10 +20,14 @@ public class IntegrationTest {
         server.start();
         ActivityClient ac = new ActivityClient("localhost", adminPort);
         PrimingClient pc = new PrimingClient("localhost", adminPort);
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withResult(PrimingRequest.Result.read_request_timeout)
+                .build();
 
         //then
         ac.clearConnections();
-        pc.prime(new PrimingRequest("", Collections.emptyList()));
+        pc.prime(pr);
 
         server.stop();
     }

@@ -28,7 +28,10 @@ public class PrimingClientTest {
     public void testPrimingEmptyResults() {
         //given
         stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
-        PrimingRequest pr = new PrimingRequest("select * from people", Collections.<Map<String, String>>emptyList());
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withRows(Collections.<Map<String, String>>emptyList())
+                .build();
         //when
         underTest.prime(pr);
         //then
@@ -45,7 +48,10 @@ public class PrimingClientTest {
         Map<String, String> row = new HashMap<>();
         row.put("name","Chris");
         rows.add(row);
-        PrimingRequest pr = new PrimingRequest("select * from people", rows);
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withRows(rows)
+                .build();
         //when
         underTest.prime(pr);
         //then
@@ -58,7 +64,10 @@ public class PrimingClientTest {
     public void testPrimingReadRequestTimeout() {
         //given
         stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
-        PrimingRequest pr = new PrimingRequest("select * from people", PrimingRequest.Result.read_request_timeout);
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withResult(PrimingRequest.Result.read_request_timeout)
+                .build();
         //when
         underTest.prime(pr);
         //then
@@ -72,7 +81,10 @@ public class PrimingClientTest {
         //given
         stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
         PrimingClient pc = new PrimingClient("localhost", PORT);
-        PrimingRequest pr = new PrimingRequest("select * from people", PrimingRequest.Result.unavailable);
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withResult(PrimingRequest.Result.unavailable)
+                .build();
         //when
         pc.prime(pr);
         //then
@@ -85,7 +97,10 @@ public class PrimingClientTest {
     public void testPrimingWriteRequestTimeout() {
         //given
         stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
-        PrimingRequest pr = new PrimingRequest("select * from people", PrimingRequest.Result.write_request_timeout);
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withResult(PrimingRequest.Result.write_request_timeout)
+                .build();
         //when
         underTest.prime(pr);
         //then
@@ -98,7 +113,10 @@ public class PrimingClientTest {
     public void testPrimeFailed() {
         //given
         stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(500)));
-        PrimingRequest pr = new PrimingRequest("select * from people", Collections.<Map<String, String>>emptyList());
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withResult(PrimingRequest.Result.read_request_timeout)
+                .build();
         //when
         underTest.prime(pr);
         //then

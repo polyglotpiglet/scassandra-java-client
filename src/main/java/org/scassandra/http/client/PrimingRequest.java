@@ -1,20 +1,49 @@
 package org.scassandra.http.client;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class PrimingRequest {
+
+    public static class PrimingRequestBuilder {
+
+        private PrimingRequestBuilder() {}
+
+        private String query;
+        private List<Map<String, String>> rows;
+        private Result result = Result.success;
+
+        public PrimingRequestBuilder withQuery(String query) {
+            this.query = query;
+            return this;
+        }
+
+        public PrimingRequestBuilder withRows(List<Map<String, String>> rows) {
+            this.rows = rows;
+            return this;
+        }
+
+        public PrimingRequestBuilder withResult(Result result) {
+            this.result = result;
+            return this;
+        }
+
+        public PrimingRequest build() {
+            return new PrimingRequest(this.query, this.rows, this.result);
+        }
+    }
+
+    public static PrimingRequestBuilder builder() {
+        return new PrimingRequestBuilder();
+    }
+
     private String when;
     private Then then;
 
-    public PrimingRequest(String when, List<Map<String, String>> rows) {
+    private PrimingRequest(String when, List<Map<String, String>> rows, Result result) {
         this.when = when;
-        this.then = new Then(rows);
-    }
-
-    public PrimingRequest(String when, Result result) {
-        this.when = when;
-        this.then = new Then(result);
+        this.then = new Then(rows, result);
     }
 
     @Override
@@ -29,11 +58,8 @@ public class PrimingRequest {
         private List<Map<String, String>> rows;
         private Result result;
 
-        private Then(List<Map<String, String>> rows) {
+        private Then(List<Map<String, String>> rows, Result result) {
             this.rows = rows;
-            this.result = Result.success;
-        }
-        private Then(Result result) {
             this.result = result;
         }
 
