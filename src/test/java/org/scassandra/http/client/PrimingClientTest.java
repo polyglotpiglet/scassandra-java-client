@@ -2,11 +2,11 @@ package org.scassandra.http.client;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
+import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.scassandra.cqlmessages.ONE;
 
 import java.util.*;
 
@@ -132,7 +132,7 @@ public class PrimingClientTest {
                 .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ONE)
                 .build();
 
-        //then
+        //when
         underTest.prime(pr);
 
         //then
@@ -140,6 +140,34 @@ public class PrimingClientTest {
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\",\"consistency\":[\"ALL\",\"ONE\"]},\"then\":{\"rows\":[],\"result\":\"success\"}}")));
 
+    }
+
+    @Test
+    public void testDeletingOfPrimes() {
+        //given
+        stubFor(delete(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
+        //when
+        underTest.clearPrimes();
+        //then
+        verify(deleteRequestedFor(urlEqualTo("/prime")));
+    }
+
+    @Test(expected = PrimeFailedException.class)
+    public void testDeletingOfPrimesFailedDueToStatusCode() {
+        //given
+        stubFor(delete(urlEqualTo("/prime")).willReturn(aResponse().withStatus(500)));
+        //when
+        underTest.clearPrimes();
+        //then
+    }
+
+    @Test(expected = PrimeFailedException.class)
+    public void testDeletingOfPrimesFailed() {
+        //given
+        stubFor(delete(urlEqualTo("/prime")).willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        //when
+        underTest.clearPrimes();
+        //then
     }
 
 }

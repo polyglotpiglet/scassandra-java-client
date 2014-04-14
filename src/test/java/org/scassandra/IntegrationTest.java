@@ -16,6 +16,8 @@ public class IntegrationTest {
     private static int binaryPort = 2345;
     private static int adminPort = 3456;
     public static final Scassandra SERVER = ScassandraFactory.createServer(binaryPort, adminPort);
+    private ActivityClient ac;
+    private PrimingClient pc;
 
     @BeforeClass
     public static void startScassandra() {
@@ -25,6 +27,14 @@ public class IntegrationTest {
     @AfterClass
     public static void stopScassandra() {
         SERVER.stop();
+    }
+
+    @Before
+    public void setup() {
+        ac = new ActivityClient("localhost", adminPort);
+        pc = new PrimingClient("localhost", adminPort);
+        ac.clearConnections();
+        ac.clearQueries();
     }
 
     @Test
