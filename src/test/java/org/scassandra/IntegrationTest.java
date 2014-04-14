@@ -35,6 +35,7 @@ public class IntegrationTest {
         pc = new PrimingClient("localhost", adminPort);
         ac.clearConnections();
         ac.clearQueries();
+        pc.clearPrimes();
     }
 
     @Test
