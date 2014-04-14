@@ -1,6 +1,7 @@
 package org.scassandra.http.client;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -8,8 +9,10 @@ public class PrimingRequest {
 
     public static class PrimingRequestBuilder {
 
+
         private PrimingRequestBuilder() {}
 
+        private Consistency[] consistency;
         private String query;
         private List<Map<String, String>> rows;
         private Result result = Result.success;
@@ -30,7 +33,19 @@ public class PrimingRequest {
         }
 
         public PrimingRequest build() {
-            return new PrimingRequest(this.query, this.rows, this.result);
+            List<Consistency> consistencies = this.consistency == null ? null : Arrays.asList(this.consistency);
+
+            List<Map<String, String>> rowsDefaultedToEmptyForSuccess = this.rows;
+
+            if (result == Result.success && rows == null) {
+                rowsDefaultedToEmptyForSuccess = Collections.emptyList();
+            }
+            return new PrimingRequest(this.query, consistencies, rowsDefaultedToEmptyForSuccess, this.result);
+        }
+
+        public PrimingRequestBuilder withConsistency(Consistency... consistencies) {
+            consistency = consistencies;
+            return this;
         }
     }
 
@@ -38,11 +53,11 @@ public class PrimingRequest {
         return new PrimingRequestBuilder();
     }
 
-    private String when;
+    private When when;
     private Then then;
 
-    private PrimingRequest(String when, List<Map<String, String>> rows, Result result) {
-        this.when = when;
+    private PrimingRequest(String query, List<Consistency> consistency, List<Map<String, String>> rows, Result result) {
+        this.when = new When(query, consistency);
         this.then = new Then(rows, result);
     }
 
@@ -70,6 +85,30 @@ public class PrimingRequest {
                     ", result=" + result +
                     '}';
         }
+    }
+
+    private static class When {
+        private String query;
+        private List<Consistency> consistency;
+
+        private When(String query, List<Consistency> consistency) {
+            this.query = query;
+            this.consistency = consistency;
+        }
+    }
+
+    public static enum Consistency {
+        ANY,
+        ONE,
+        TWO,
+        THREE,
+        QUORUM,
+        ALL,
+        LOCAL_QUORUM,
+        EACH_QUORUM,
+        SERIAL,
+        LOCAL_SERIAL,
+        LOCAL_ONE
     }
 
     public static enum Result {

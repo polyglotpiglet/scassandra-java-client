@@ -1,7 +1,11 @@
 package org.scassandra;
 
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.scassandra.http.client.ActivityClient;
+import org.scassandra.http.client.PrimeFailedException;
 import org.scassandra.http.client.PrimingClient;
 import org.scassandra.http.client.PrimingRequest;
 
@@ -11,13 +15,22 @@ public class IntegrationTest {
 
     private static int binaryPort = 2345;
     private static int adminPort = 3456;
+    public static final Scassandra SERVER = ScassandraFactory.createServer(binaryPort, adminPort);
+
+    @BeforeClass
+    public static void startScassandra() {
+        SERVER.start();
+    }
+
+    @AfterClass
+    public static void stopScassandra() {
+        SERVER.stop();
+    }
 
     @Test
     public void clientsShouldBeAbleToConnect() {
         //given
-        Scassandra server = ScassandraFactory.createServer(binaryPort, adminPort);
         //when
-        server.start();
         ActivityClient ac = new ActivityClient("localhost", adminPort);
         PrimingClient pc = new PrimingClient("localhost", adminPort);
         PrimingRequest pr = PrimingRequest.builder()
@@ -28,7 +41,26 @@ public class IntegrationTest {
         //then
         ac.clearConnections();
         pc.prime(pr);
+    }
 
-        server.stop();
+    @Test(expected = PrimeFailedException.class)
+    public void testConflictingConsistencies() {
+        //given
+        ActivityClient ac = new ActivityClient("localhost", adminPort);
+        PrimingClient pc = new PrimingClient("localhost", adminPort);
+
+        PrimingRequest prWithAllAndAny = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ANY)
+                .build();
+        PrimingRequest prWithAllAndONE = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ONE)
+                .build();
+        //when
+        pc.prime(prWithAllAndAny);
+        pc.prime(prWithAllAndONE);
+
+        //then
     }
 }

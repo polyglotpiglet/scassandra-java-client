@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.scassandra.cqlmessages.ONE;
 
 import java.util.*;
 
@@ -37,7 +38,7 @@ public class PrimingClientTest {
         //then
         verify(postRequestedFor(urlEqualTo("/prime"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"rows\":[],\"result\":\"success\"}}")));
+                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"rows\":[],\"result\":\"success\"}}")));
     }
 
     @Test
@@ -57,7 +58,7 @@ public class PrimingClientTest {
         //then
         verify(postRequestedFor(urlEqualTo("/prime"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"rows\":[{\"name\":\"Chris\"}],\"result\":\"success\"}}")));
+                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"rows\":[{\"name\":\"Chris\"}],\"result\":\"success\"}}")));
     }
 
     @Test
@@ -73,7 +74,7 @@ public class PrimingClientTest {
         //then
         verify(postRequestedFor(urlEqualTo("/prime"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"result\":\"read_request_timeout\"}}")));
+                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"result\":\"read_request_timeout\"}}")));
     }
 
     @Test
@@ -90,7 +91,7 @@ public class PrimingClientTest {
         //then
         verify(postRequestedFor(urlEqualTo("/prime"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"result\":\"unavailable\"}}")));
+                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"result\":\"unavailable\"}}")));
     }
 
     @Test
@@ -106,7 +107,7 @@ public class PrimingClientTest {
         //then
         verify(postRequestedFor(urlEqualTo("/prime"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":\"select * from people\",\"then\":{\"result\":\"write_request_timeout\"}}")));
+                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"result\":\"write_request_timeout\"}}")));
     }
 
     @Test(expected = PrimeFailedException.class)
@@ -120,6 +121,25 @@ public class PrimingClientTest {
         //when
         underTest.prime(pr);
         //then
+    }
+
+    @Test
+    public void testPrimingConsistency() {
+        //given
+        stubFor(post(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ONE)
+                .build();
+
+        //then
+        underTest.prime(pr);
+
+        //then
+        verify(postRequestedFor(urlEqualTo("/prime"))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\",\"consistency\":[\"ALL\",\"ONE\"]},\"then\":{\"rows\":[],\"result\":\"success\"}}")));
+
     }
 
 }
