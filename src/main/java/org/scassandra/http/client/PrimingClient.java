@@ -22,15 +22,11 @@ public class PrimingClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PrimingClient.class);
 
-    private String host;
-    private int port;
     private Gson gson = new Gson();
     private CloseableHttpClient httpClient = HttpClients.createDefault();
     private String primeUrl;
 
     public PrimingClient(String host, int port) {
-        this.host = host;
-        this.port = port;
         this.primeUrl = "http://" + host + ":" + port + "/prime";
     }
 
