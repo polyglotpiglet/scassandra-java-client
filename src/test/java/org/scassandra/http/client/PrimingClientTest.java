@@ -1,6 +1,7 @@
 package org.scassandra.http.client;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.junit.Assert.assertEquals;
 
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -143,6 +144,35 @@ public class PrimingClientTest {
     }
 
     @Test
+    public void testRetrieveOfPreviousPrimes() {
+        //given
+        Map<String, String> rows = new HashMap<>();
+        rows.put("name","Chris");
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withRows(Arrays.asList(rows))
+                .build();
+        stubFor(get(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200).withBody(
+                "[{\n" +
+                        "  \"when\": {\n" +
+                        "    \"query\": \"select * from people\"\n" +
+                        "  },\n" +
+                        "  \"then\": {\n" +
+                        "    \"rows\": [{\n" +
+                        "      \"name\": \"Chris\"\n" +
+                        "    }],\n" +
+                        "    \"result\":\"success\""+
+                        "  }\n" +
+                        "}]"
+        )));
+        //when
+        List<PrimingRequest> primingRequests = underTest.retrievePrimes();
+        //then
+        assertEquals(1, primingRequests.size());
+        assertEquals(pr, primingRequests.get(0));
+    }
+
+    @Test
     public void testDeletingOfPrimes() {
         //given
         stubFor(delete(urlEqualTo("/prime")).willReturn(aResponse().withStatus(200)));
@@ -160,6 +190,14 @@ public class PrimingClientTest {
         underTest.clearPrimes();
         //then
     }
+    @Test(expected = PrimeFailedException.class)
+    public void testRetrievingOfPrimesFailedDueToStatusCode() {
+        //given
+        stubFor(get(urlEqualTo("/prime")).willReturn(aResponse().withStatus(500)));
+        //when
+        underTest.retrievePrimes();
+        //then
+    }
 
     @Test(expected = PrimeFailedException.class)
     public void testDeletingOfPrimesFailed() {
@@ -167,6 +205,14 @@ public class PrimingClientTest {
         stubFor(delete(urlEqualTo("/prime")).willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.clearPrimes();
+        //then
+    }
+    @Test(expected = PrimeFailedException.class)
+    public void testRetrievingOfPrimesFailed() {
+        //given
+        stubFor(get(urlEqualTo("/prime")).willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        //when
+        underTest.retrievePrimes();
         //then
     }
 

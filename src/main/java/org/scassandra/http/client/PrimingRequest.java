@@ -8,8 +8,6 @@ import java.util.Map;
 public class PrimingRequest {
 
     public static class PrimingRequestBuilder {
-
-
         private PrimingRequestBuilder() {}
 
         private Consistency[] consistency;
@@ -62,6 +60,26 @@ public class PrimingRequest {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PrimingRequest that = (PrimingRequest) o;
+
+        if (then != null ? !then.equals(that.then) : that.then != null) return false;
+        if (when != null ? !when.equals(that.when) : that.when != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = when != null ? when.hashCode() : 0;
+        result = 31 * result + (then != null ? then.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "PrimingRequest{" +
                 "when='" + when + '\'' +
@@ -85,6 +103,26 @@ public class PrimingRequest {
                     ", result=" + result +
                     '}';
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Then then = (Then) o;
+
+            if (result != then.result) return false;
+            if (rows != null ? !rows.equals(then.rows) : then.rows != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result1 = rows != null ? rows.hashCode() : 0;
+            result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
+            return result1;
+        }
     }
 
     private static class When {
@@ -94,6 +132,26 @@ public class PrimingRequest {
         private When(String query, List<Consistency> consistency) {
             this.query = query;
             this.consistency = consistency;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            When when = (When) o;
+
+            if (consistency != null ? !consistency.equals(when.consistency) : when.consistency != null) return false;
+            if (query != null ? !query.equals(when.query) : when.query != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = query != null ? query.hashCode() : 0;
+            result = 31 * result + (consistency != null ? consistency.hashCode() : 0);
+            return result;
         }
     }
 

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -14,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class PrimingClient {
 
@@ -63,6 +66,24 @@ public class PrimingClient {
             }
         } catch (IOException e) {
             LOGGER.info("priming failed", e);
+            throw new PrimeFailedException();
+        }
+    }
+
+    public List<PrimingRequest> retrievePrimes() {
+        HttpGet get = new HttpGet(primeUrl);
+        try {
+            CloseableHttpResponse httpResponse = httpClient.execute(get);
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                LOGGER.info("Retrieving of primes failed with http status {}", statusCode);
+                throw new PrimeFailedException();
+            }
+            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
+            PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
+            return Arrays.asList(primes);
+        } catch (IOException e) {
+            LOGGER.info("retrieving failed", e);
             throw new PrimeFailedException();
         }
     }
