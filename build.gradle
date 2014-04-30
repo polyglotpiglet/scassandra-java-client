@@ -3,7 +3,10 @@ apply plugin: 'idea'
 apply plugin: 'maven-publish'
 
 repositories {
-  mavenCentral()
+    mavenCentral()
+    maven {
+        url "https://raw.githubusercontent.com/scassandra/scassandra-repo/master/snapshots"
+    }
 }
 
 publishing {
@@ -16,10 +19,18 @@ publishing {
             from components.java
         }
     }
+    repositories {
+        maven {
+            url "../scassandra-repo/snapshots" // change to point to your repo, e.g. http://my.org/repo
+        }
+    }
 }
 
+
 dependencies {
-  compile files('./lib/cassandra_server_stub.jar')
+  compile('scassandra-server:scassandra-server_2.10:0.1-SNAPSHOT') {
+      exclude module: 'sbt-idea'
+  }
   compile 'org.apache.httpcomponents:httpclient:4.3.3'
   compile 'com.google.code.gson:gson:2.2.4'
   compile 'org.slf4j:slf4j-api:1.7.6'
