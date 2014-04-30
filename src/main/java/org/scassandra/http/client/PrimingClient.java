@@ -76,6 +76,7 @@ public class PrimingClient {
                 throw new PrimeFailedException();
             }
             String responseAsString = EntityUtils.toString(httpResponse.getEntity());
+            LOGGER.debug("Received response from scassandra {}", responseAsString);
             PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
             return Arrays.asList(primes);
         } catch (IOException e) {

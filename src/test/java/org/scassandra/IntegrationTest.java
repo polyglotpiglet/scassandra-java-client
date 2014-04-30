@@ -9,7 +9,9 @@ import org.scassandra.http.client.PrimeFailedException;
 import org.scassandra.http.client.PrimingClient;
 import org.scassandra.http.client.PrimingRequest;
 
-import java.util.Collections;
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
 
 public class IntegrationTest {
 
@@ -74,4 +76,31 @@ public class IntegrationTest {
 
         //then
     }
+
+    @Test
+    public void testPrimeAndRetrieveOfPrime() {
+        //given
+        PrimingClient pc = new PrimingClient("localhost", adminPort);
+
+
+        List<Map<String, String>> rows = new ArrayList<>();
+        Map<String, String> row = new HashMap<>();
+        row.put("name", "chris");
+        rows.add(row);
+        PrimingRequest prime = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withRows(rows)
+                .withResult(PrimingRequest.Result.success)
+                .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ANY)
+                .build();
+
+        //when
+        pc.prime(prime);
+        List<PrimingRequest> primes = pc.retrievePrimes();
+        //then
+        assertEquals(1, primes.size());
+        assertEquals(prime, primes.get(0));
+
+    }
+
 }
