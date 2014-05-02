@@ -16,6 +16,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Responsible for retrieving and clearing interactions with the Scassandra server. Including
+ * - Queries
+ * - Connections
+ */
 public class ActivityClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActivityClient.class);
@@ -25,7 +30,7 @@ public class ActivityClient {
     private String connectionUrl;
     private String queryUrl;
 
-    public ActivityClient(String host, int port) {
+    public ActivityClient(String host, int adminPort) {
         RequestConfig.Builder requestBuilder = RequestConfig.custom();
         requestBuilder = requestBuilder.setConnectTimeout(500);
         requestBuilder = requestBuilder.setConnectionRequestTimeout(500);
@@ -33,12 +38,15 @@ public class ActivityClient {
         HttpClientBuilder builder = HttpClientBuilder.create();
         builder.setDefaultRequestConfig(requestBuilder.build());
         httpClient = builder.build();
-        this.connectionUrl = "http://" + host + ":" + port + "/connection";
-        this.queryUrl = "http://" + host + ":" + port + "/query";
-
-
+        this.connectionUrl = "http://" + host + ":" + adminPort + "/connection";
+        this.queryUrl = "http://" + host + ":" + adminPort + "/query";
     }
 
+    /**
+     * Retrieves all the queries that have been sent to the configured Scassandra server.
+     *
+     * @return A List of Query objects
+     */
     public List<Query> retrieveQueries() {
         HttpGet get = new HttpGet(queryUrl);
         try {
@@ -53,7 +61,11 @@ public class ActivityClient {
             throw new ActivityRequestFailed();
         }
     }
-
+    /**
+     * Retrieves all the connections that have been sent to the configured Scassandra server.
+     *
+     * @return A List of Connection objects
+     */
     public List<Connection> retrieveConnections() {
         HttpGet get = new HttpGet(connectionUrl);
 
@@ -70,6 +82,9 @@ public class ActivityClient {
         }
     }
 
+    /**
+     * Deletes all the recorded connections from the configured Scassandra server.
+     */
     public void clearConnections() {
         HttpDelete delete = new HttpDelete(connectionUrl);
         try {
@@ -80,7 +95,9 @@ public class ActivityClient {
             throw new ActivityRequestFailed();
         }
     }
-
+    /**
+     * Deletes all the recorded queries from the configured Scassandra server.
+     */
     public void clearQueries() {
         HttpDelete delete = new HttpDelete(queryUrl);
         try {

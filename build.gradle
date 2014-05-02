@@ -2,6 +2,11 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
 
+compileJava {
+    sourceCompatibility = "1.6"
+    targetCompatibility = "1.6"
+}
+
 repositories {
     mavenCentral()
     maven {
@@ -9,14 +14,27 @@ repositories {
     }
 }
 
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+group 'org.scassandra'
+
+version '0.0-SNAPSHOT'
+
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId 'org.scassandra'
             artifactId 'java-client'
-            version '0.0-SNAPSHOT'
-
             from components.java
+        }
+        mavenJava(MavenPublication) {
+            artifactId 'java-client'
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
         }
     }
     repositories {
@@ -29,8 +47,8 @@ publishing {
 
 dependencies {
   compile('scassandra-server:scassandra-server_2.10:0.1-SNAPSHOT')
-  compile 'org.apache.httpcomponents:httpclient:4.3.3'
-  compile 'com.google.code.gson:gson:2.2.4'
+  compile 'org.apache.httpcomponents:httpclient:4+'
+  compile 'com.google.code.gson:gson:2+'
   compile 'org.slf4j:slf4j-api:1.7.6'
   testCompile 'ch.qos.logback:logback-classic:1.1.1'
   testCompile 'org.mockito:mockito-all:1.9.5'
