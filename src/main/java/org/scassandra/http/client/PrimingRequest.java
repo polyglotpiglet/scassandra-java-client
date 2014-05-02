@@ -25,6 +25,11 @@ public class PrimingRequest {
             return this;
         }
 
+        public PrimingRequestBuilder withRows(Map<String, String>... rows) {
+            this.rows = Arrays.asList(rows);
+            return this;
+        }
+
         public PrimingRequestBuilder withResult(Result result) {
             this.result = result;
             return this;
