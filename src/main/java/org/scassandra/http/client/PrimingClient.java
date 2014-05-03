@@ -27,7 +27,7 @@ public class PrimingClient {
     private String primeUrl;
 
     public PrimingClient(String host, int port) {
-        this.primeUrl = "http://" + host + ":" + port + "/prime";
+        this.primeUrl = "http://" + host + ":" + port + "/prime-single";
     }
 
     public void prime(PrimingRequest primeRequest) throws PrimeFailedException {
