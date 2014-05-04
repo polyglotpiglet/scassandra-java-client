@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +35,7 @@ public class PrimingClientTest {
         stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
         PrimingRequest pr = PrimingRequest.builder()
                 .withQuery("select * from people")
-                .withRows(Collections.<Map<String, String>>emptyList())
+                .withRows(Collections.<Map<String, Object>>emptyList())
                 .build();
         //when
         underTest.prime(pr);
@@ -47,8 +49,8 @@ public class PrimingClientTest {
     public void testPrimingWithMultipleRows() {
         //given
         stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
-        List<Map<String,String>> rows = new ArrayList<>();
-        Map<String, String> row = new HashMap<>();
+        List<Map<String,Object>> rows = new ArrayList<>();
+        Map<String, Object> row = new HashMap<>();
         row.put("name","Chris");
         rows.add(row);
         PrimingRequest pr = PrimingRequest.builder()
@@ -147,7 +149,7 @@ public class PrimingClientTest {
     @Test
     public void testRetrieveOfPreviousPrimes() {
         //given
-        Map<String, String> rows = new HashMap<>();
+        Map<String, Object> rows = new HashMap<>();
         rows.put("name","Chris");
         PrimingRequest pr = PrimingRequest.builder()
                 .withQuery("select * from people")
@@ -215,6 +217,60 @@ public class PrimingClientTest {
         //when
         underTest.retrievePrimes();
         //then
+    }
+
+    @Test
+    public void testPrimingSets() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
+        List<Map<String,Object>> rows = new ArrayList<>();
+        Map<String, Object> row = new HashMap<>();
+        Set<String> set = Sets.newHashSet("one", "two", "three");
+        row.put("set",set);
+        rows.add(row);
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withRows(rows)
+                .build();
+        //when
+        underTest.prime(pr);
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"}," +
+                        "\"then\":{" +
+                        "\"rows\":[" +
+                        "{\"set\":[\"two\",\"three\",\"one\"]}]," +
+                        "\"result\":\"success\"}}")));
+
+    }
+
+    @Test
+    public void testPrimingOfTypes() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
+        Map<String, ColumnTypes> types = ImmutableMap.of("set", ColumnTypes.Set);
+        List<Map<String,Object>> rows = new ArrayList<>();
+        Map<String, Object> row = new HashMap<>();
+        Set<String> set = Sets.newHashSet("one", "two", "three");
+        row.put("set",set);
+        rows.add(row);
+        PrimingRequest pr = PrimingRequest.builder()
+                .withQuery("select * from people")
+                .withRows(rows)
+                .withColumnTypes(types)
+                .build();
+        //when
+        underTest.prime(pr);
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"}," +
+                        "\"then\":{" +
+                        "\"rows\":[" +
+                        "{\"set\":[\"two\",\"three\",\"one\"]}]," +
+                        "\"result\":\"success\"" +
+                        ",\"column_types\":{\"set\":\"Set\"}}}")));
     }
 
 }

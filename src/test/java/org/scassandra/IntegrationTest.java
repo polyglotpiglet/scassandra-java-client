@@ -83,8 +83,8 @@ public class IntegrationTest {
         PrimingClient pc = new PrimingClient("localhost", adminPort);
 
 
-        List<Map<String, String>> rows = new ArrayList<>();
-        Map<String, String> row = new HashMap<>();
+        List<Map<String, Object>> rows = new ArrayList<>();
+        Map<String, Object> row = new HashMap<>();
         row.put("name", "chris");
         rows.add(row);
         PrimingRequest prime = PrimingRequest.builder()
