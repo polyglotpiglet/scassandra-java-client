@@ -31,9 +31,9 @@ public class PrimingClient {
     }
 
     public void prime(PrimingRequest primeRequest) throws PrimeFailedException {
-        LOGGER.info("Prime request {}", primeRequest);
         HttpPost httpPost = new HttpPost(primeUrl);
         String jsonAsString = gson.toJson(primeRequest);
+        LOGGER.info("Sending prime to server {}", jsonAsString);
         httpPost.setEntity(new StringEntity(jsonAsString, ContentType.APPLICATION_JSON));
         CloseableHttpResponse response1;
         try {
