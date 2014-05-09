@@ -16,7 +16,8 @@ import java.util.*;
 public class PrimingClientTest {
 
     private static final int PORT = 1234;
-    public static final String PRIME_PATH = "/prime-query-single";
+    public static final String PRIME_PREPARED_PATH = "/prime-prepared-single";
+    public static final String PRIME_QUERY_PATH = "/prime-query-single";
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(PORT);
@@ -30,95 +31,95 @@ public class PrimingClientTest {
 
 
     @Test
-    public void testPrimingEmptyResults() {
+    public void testPrimingQueryEmptyResults() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
-        PrimingRequest pr = PrimingRequest.builder()
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(Collections.<Map<String, Object>>emptyList())
                 .build();
         //when
         underTest.primeQuery(pr);
         //then
-        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"rows\":[],\"result\":\"success\"}}")));
     }
 
     @Test
-    public void testPrimingWithMultipleRows() {
+    public void testPrimingQueryWithMultipleRows() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         List<Map<String,Object>> rows = new ArrayList<>();
         Map<String, Object> row = new HashMap<>();
         row.put("name","Chris");
         rows.add(row);
-        PrimingRequest pr = PrimingRequest.builder()
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(rows)
                 .build();
         //when
         underTest.primeQuery(pr);
         //then
-        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"rows\":[{\"name\":\"Chris\"}],\"result\":\"success\"}}")));
     }
 
     @Test
-    public void testPrimingReadRequestTimeout() {
+    public void testPrimingQueryReadRequestTimeout() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
-        PrimingRequest pr = PrimingRequest.builder()
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.read_request_timeout)
                 .build();
         //when
         underTest.primeQuery(pr);
         //then
-        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"result\":\"read_request_timeout\"}}")));
     }
 
     @Test
-    public void testPrimingUnavailableException() {
+    public void testPrimingQueryUnavailableException() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         PrimingClient pc = new PrimingClient("localhost", PORT);
-        PrimingRequest pr = PrimingRequest.builder()
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.unavailable)
                 .build();
         //when
         pc.primeQuery(pr);
         //then
-        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"result\":\"unavailable\"}}")));
     }
 
     @Test
-    public void testPrimingWriteRequestTimeout() {
+    public void testPrimingQueryWriteRequestTimeout() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
-        PrimingRequest pr = PrimingRequest.builder()
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.write_request_timeout)
                 .build();
         //when
         underTest.primeQuery(pr);
         //then
-        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"result\":\"write_request_timeout\"}}")));
     }
 
     @Test(expected = PrimeFailedException.class)
-    public void testPrimeFailed() {
+    public void testPrimeQueryFailed() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(500)));
-        PrimingRequest pr = PrimingRequest.builder()
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(500)));
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.read_request_timeout)
                 .build();
@@ -128,10 +129,10 @@ public class PrimingClientTest {
     }
 
     @Test
-    public void testPrimingConsistency() {
+    public void testPrimingQueryConsistency() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
-        PrimingRequest pr = PrimingRequest.builder()
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ONE)
                 .build();
@@ -140,22 +141,22 @@ public class PrimingClientTest {
         underTest.primeQuery(pr);
 
         //then
-        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\",\"consistency\":[\"ALL\",\"ONE\"]},\"then\":{\"rows\":[],\"result\":\"success\"}}")));
 
     }
 
     @Test
-    public void testRetrieveOfPreviousPrimes() {
+    public void testRetrieveOfPreviousQueryPrimes() {
         //given
         Map<String, Object> rows = new HashMap<>();
         rows.put("name","Chris");
-        PrimingRequest pr = PrimingRequest.builder()
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(Arrays.asList(rows))
                 .build();
-        stubFor(get(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200).withBody(
+        stubFor(get(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200).withBody(
                 "[{\n" +
                         "  \"when\": {\n" +
                         "    \"query\": \"select * from people\"\n" +
@@ -176,66 +177,68 @@ public class PrimingClientTest {
     }
 
     @Test
-    public void testDeletingOfPrimes() {
+    public void testDeletingOfQueryPrimes() {
         //given
-        stubFor(delete(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         //when
         underTest.clearPrimes();
         //then
-        verify(deleteRequestedFor(urlEqualTo(PRIME_PATH)));
+        verify(deleteRequestedFor(urlEqualTo(PRIME_QUERY_PATH)));
     }
 
     @Test(expected = PrimeFailedException.class)
-    public void testDeletingOfPrimesFailedDueToStatusCode() {
+    public void testDeletingOfQueryPrimesFailedDueToStatusCode() {
         //given
-        stubFor(delete(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(500)));
+        stubFor(delete(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(500)));
         //when
         underTest.clearPrimes();
         //then
     }
     @Test(expected = PrimeFailedException.class)
-    public void testRetrievingOfPrimesFailedDueToStatusCode() {
+    public void testRetrievingOfQueryPrimesFailedDueToStatusCode() {
         //given
-        stubFor(get(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(500)));
+        stubFor(get(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(500)));
         //when
         underTest.retrievePrimes();
         //then
     }
 
     @Test(expected = PrimeFailedException.class)
-    public void testDeletingOfPrimesFailed() {
+    public void testDeletingOfQueryPrimesFailed() {
         //given
-        stubFor(delete(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        stubFor(delete(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.clearPrimes();
         //then
     }
     @Test(expected = PrimeFailedException.class)
-    public void testRetrievingOfPrimesFailed() {
+    public void testRetrievingOfQueryPrimesFailed() {
         //given
-        stubFor(get(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        stubFor(get(urlEqualTo(PRIME_QUERY_PATH))
+                .willReturn(aResponse()
+                .withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.retrievePrimes();
         //then
     }
 
     @Test
-    public void testPrimingSets() {
+    public void testPrimingQueryWithSets() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         List<Map<String,Object>> rows = new ArrayList<>();
         Map<String, Object> row = new HashMap<>();
         Set<String> set = Sets.newHashSet("one", "two", "three");
         row.put("set",set);
         rows.add(row);
-        PrimingRequest pr = PrimingRequest.builder()
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(rows)
                 .build();
         //when
         underTest.primeQuery(pr);
         //then
-        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"}," +
                         "\"then\":{" +
@@ -246,31 +249,75 @@ public class PrimingClientTest {
     }
 
     @Test
-    public void testPrimingOfTypes() {
+    public void testPrimingQueryWithCustomTypes() {
         //given
-        stubFor(post(urlEqualTo(PRIME_PATH)).willReturn(aResponse().withStatus(200)));
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         Map<String, ColumnTypes> types = ImmutableMap.of("set", ColumnTypes.Set);
         List<Map<String,Object>> rows = new ArrayList<>();
         Map<String, Object> row = new HashMap<>();
         Set<String> set = Sets.newHashSet("one", "two", "three");
         row.put("set",set);
         rows.add(row);
-        PrimingRequest pr = PrimingRequest.builder()
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(rows)
                 .withColumnTypes(types)
                 .build();
         //when
         underTest.primeQuery(pr);
+
         //then
-        verify(postRequestedFor(urlEqualTo(PRIME_PATH))
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"}," +
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
                         "\"then\":{" +
                         "\"rows\":[" +
                         "{\"set\":[\"two\",\"three\",\"one\"]}]," +
                         "\"result\":\"success\"" +
                         ",\"column_types\":{\"set\":\"Set\"}}}")));
+    }
+
+    @Test
+    public void testPrimingPreparedStatementWithJustQueryText() {
+        //given
+        PrimingRequest primingRequest = PrimingRequest.preparedStatementBuilder()
+                .withQuery("select * from people where people = ?")
+                .build();
+
+        //when
+        underTest.primePreparedStatement(primingRequest);
+
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_PREPARED_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalToJson("{\n" +
+                        "   \"when\": { \n" +
+                        "     \"query\" :\"select * from people where people = ?\"\n" +
+                        "   },\n" +
+                        "   \"then\": { \n" +
+                        "     \"rows\" :[], \n" +
+                        "     \"result\":\"success\" " +
+                        "   }\n" +
+                        " }")));
+    }
+
+    @Test(expected = PrimeFailedException.class)
+    public void testPrimingPreparedStatementFailureDueToStatusCode() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_PREPARED_PATH))
+                .willReturn(aResponse().withStatus(500)));
+        //when
+        underTest.primePreparedStatement(PrimingRequest.preparedStatementBuilder().build());
+        //then
+    }
+    @Test(expected = PrimeFailedException.class)
+    public void testPrimingPreparedStatementFailureDueToHttpError() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_PREPARED_PATH))
+                .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        //when
+        underTest.primePreparedStatement(PrimingRequest.preparedStatementBuilder().build());
+        //then
     }
 
 }

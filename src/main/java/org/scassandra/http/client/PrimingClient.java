@@ -1,7 +1,6 @@
 package org.scassandra.http.client;
 
 import com.google.gson.Gson;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -24,23 +23,29 @@ public class PrimingClient {
 
     private Gson gson = new Gson();
     private CloseableHttpClient httpClient = HttpClients.createDefault();
-    private String primeUrl;
+    private String primeQueryUrl;
+    private String primePreparedUrl;
 
     public PrimingClient(String host, int port) {
-        this.primeUrl = "http://" + host + ":" + port + "/prime-query-single";
+        this.primeQueryUrl = "http://" + host + ":" + port + "/prime-query-single";
+        this.primePreparedUrl = "http://" + host + ":" + port + "/prime-prepared-single";
     }
     
     public void primeQuery(PrimingRequest primeRequest) throws PrimeFailedException {
-        HttpPost httpPost = new HttpPost(primeUrl);
+        HttpPost httpPost = new HttpPost(primeQueryUrl);
         String jsonAsString = gson.toJson(primeRequest);
         LOGGER.info("Sending primeQuery to server {}", jsonAsString);
         httpPost.setEntity(new StringEntity(jsonAsString, ContentType.APPLICATION_JSON));
-        CloseableHttpResponse response1;
+        CloseableHttpResponse response1 = null;
         try {
             response1 = httpClient.execute(httpPost);
         } catch (IOException e) {
             LOGGER.warn("priming failed", e);
             throw new PrimeFailedException();
+        } finally {
+            if (response1 != null) {
+                EntityUtils.consumeQuietly(response1.getEntity());
+            }
         }
 
         if (response1.getStatusLine().getStatusCode() != 200) {
@@ -51,9 +56,10 @@ public class PrimingClient {
     }
 
     public void clearPrimes() {
-        HttpDelete delete = new HttpDelete(primeUrl);
+        HttpDelete delete = new HttpDelete(primeQueryUrl);
+        CloseableHttpResponse httpResponse = null;
         try {
-            CloseableHttpResponse httpResponse = httpClient.execute(delete);
+            httpResponse = httpClient.execute(delete);
             EntityUtils.consumeQuietly(httpResponse.getEntity());
             int statusCode = httpResponse.getStatusLine().getStatusCode();
             if (statusCode != 200) {
@@ -63,11 +69,15 @@ public class PrimingClient {
         } catch (IOException e) {
             LOGGER.info("priming failed", e);
             throw new PrimeFailedException();
+        } finally {
+            if (httpResponse != null) {
+                EntityUtils.consumeQuietly(httpResponse.getEntity());
+            }
         }
     }
 
     public List<PrimingRequest> retrievePrimes() {
-        HttpGet get = new HttpGet(primeUrl);
+        HttpGet get = new HttpGet(primeQueryUrl);
         try {
             CloseableHttpResponse httpResponse = httpClient.execute(get);
             int statusCode = httpResponse.getStatusLine().getStatusCode();
@@ -81,6 +91,23 @@ public class PrimingClient {
             return Arrays.asList(primes);
         } catch (IOException e) {
             LOGGER.info("retrieving failed", e);
+            throw new PrimeFailedException();
+        }
+    }
+
+    public void primePreparedStatement(PrimingRequest primingRequest) {
+        HttpPost httpPost = new HttpPost(primePreparedUrl);
+        String primeAsJson = gson.toJson(primingRequest);
+        httpPost.setEntity(new StringEntity(primeAsJson, ContentType.APPLICATION_JSON));
+        try {
+            CloseableHttpResponse response = httpClient.execute(httpPost);
+            EntityUtils.consumeQuietly(response.getEntity());
+            if (response.getStatusLine().getStatusCode() != 200) {
+                throw new PrimeFailedException();
+
+            }
+        } catch (IOException e) {
+            LOGGER.info("failed prepared prime {}", e);
             throw new PrimeFailedException();
         }
     }

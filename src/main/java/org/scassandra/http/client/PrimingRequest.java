@@ -56,7 +56,11 @@ public class PrimingRequest {
         }
     }
 
-    public static PrimingRequestBuilder builder() {
+    public static PrimingRequestBuilder queryBuilder() {
+        return new PrimingRequestBuilder();
+    }
+
+    public static PrimingRequestBuilder preparedStatementBuilder() {
         return new PrimingRequestBuilder();
     }
 

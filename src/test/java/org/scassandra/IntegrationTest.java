@@ -18,12 +18,14 @@ public class IntegrationTest {
     private static int binaryPort = 2345;
     private static int adminPort = 3456;
     public static final Scassandra SERVER = ScassandraFactory.createServer(binaryPort, adminPort);
-    private ActivityClient ac;
-    private PrimingClient pc;
+    private static ActivityClient ac;
+    private static PrimingClient pc;
 
     @BeforeClass
     public static void startScassandra() {
         SERVER.start();
+        ac = new ActivityClient("localhost", adminPort);
+        pc = new PrimingClient("localhost", adminPort);
     }
 
     @AfterClass
@@ -33,8 +35,6 @@ public class IntegrationTest {
 
     @Before
     public void setup() {
-        ac = new ActivityClient("localhost", adminPort);
-        pc = new PrimingClient("localhost", adminPort);
         ac.clearConnections();
         ac.clearQueries();
         pc.clearPrimes();
@@ -44,9 +44,7 @@ public class IntegrationTest {
     public void clientsShouldBeAbleToConnect() {
         //given
         //when
-        ActivityClient ac = new ActivityClient("localhost", adminPort);
-        PrimingClient pc = new PrimingClient("localhost", adminPort);
-        PrimingRequest pr = PrimingRequest.builder()
+        PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.read_request_timeout)
                 .build();
@@ -57,16 +55,13 @@ public class IntegrationTest {
     }
 
     @Test(expected = PrimeFailedException.class)
-    public void testConflictingConsistencies() {
+    public void testQueryPrimeConflictingConsistencies() {
         //given
-        ActivityClient ac = new ActivityClient("localhost", adminPort);
-        PrimingClient pc = new PrimingClient("localhost", adminPort);
-
-        PrimingRequest prWithAllAndAny = PrimingRequest.builder()
+        PrimingRequest prWithAllAndAny = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ANY)
                 .build();
-        PrimingRequest prWithAllAndONE = PrimingRequest.builder()
+        PrimingRequest prWithAllAndONE = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ONE)
                 .build();
@@ -78,16 +73,13 @@ public class IntegrationTest {
     }
 
     @Test
-    public void testPrimeAndRetrieveOfPrime() {
+    public void testQueryPrimeAndRetrieveOfPrime() {
         //given
-        PrimingClient pc = new PrimingClient("localhost", adminPort);
-
-
         List<Map<String, Object>> rows = new ArrayList<>();
         Map<String, Object> row = new HashMap<>();
         row.put("name", "chris");
         rows.add(row);
-        PrimingRequest prime = PrimingRequest.builder()
+        PrimingRequest prime = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(rows)
                 .withResult(PrimingRequest.Result.success)
@@ -100,7 +92,22 @@ public class IntegrationTest {
         //then
         assertEquals(1, primes.size());
         assertEquals(prime, primes.get(0));
-
     }
 
+    @Test
+    public void testPreparedPrime() {
+        //given
+        List<Map<String, Object>> rows = new ArrayList<>();
+        Map<String, Object> row = new HashMap<>();
+        row.put("name", "chris");
+        rows.add(row);
+        PrimingRequest prime = PrimingRequest.queryBuilder()
+                .withQuery("select * from people where name = ?")
+                .withRows(rows)
+                .build();
+
+        //when
+        pc.primePreparedStatement(prime);
+        //then
+    }
 }
