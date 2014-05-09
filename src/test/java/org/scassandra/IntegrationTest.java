@@ -75,13 +75,11 @@ public class IntegrationTest {
     @Test
     public void testQueryPrimeAndRetrieveOfPrime() {
         //given
-        List<Map<String, Object>> rows = new ArrayList<>();
         Map<String, Object> row = new HashMap<>();
         row.put("name", "chris");
-        rows.add(row);
         PrimingRequest prime = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
-                .withRows(rows)
+                .withRows(row)
                 .withResult(PrimingRequest.Result.success)
                 .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ANY)
                 .build();
@@ -97,13 +95,11 @@ public class IntegrationTest {
     @Test
     public void testPreparedPrime() {
         //given
-        List<Map<String, Object>> rows = new ArrayList<>();
-        Map<String, Object> row = new HashMap<>();
+        Map<String, String> row = new HashMap<>();
         row.put("name", "chris");
-        rows.add(row);
         PrimingRequest prime = PrimingRequest.queryBuilder()
                 .withQuery("select * from people where name = ?")
-                .withRows(rows)
+                .withRows(row)
                 .build();
 
         //when

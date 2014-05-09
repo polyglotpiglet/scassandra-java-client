@@ -102,8 +102,9 @@ public class PrimingClient {
         try {
             CloseableHttpResponse response = httpClient.execute(httpPost);
             EntityUtils.consumeQuietly(response.getEntity());
-            if (response.getStatusLine().getStatusCode() != 200) {
-                throw new PrimeFailedException();
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                throw new PrimeFailedException("Response code from server: " + statusCode);
 
             }
         } catch (IOException e) {

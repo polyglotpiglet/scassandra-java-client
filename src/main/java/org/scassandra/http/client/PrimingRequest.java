@@ -11,7 +11,7 @@ public class PrimingRequest {
         private Consistency[] consistency;
         private Map<String, ColumnTypes> types;
         private String query;
-        private List<Map<String, Object>> rows;
+        private List<Map<String, ? extends Object>> rows;
         private Result result = Result.success;
 
         public PrimingRequestBuilder withQuery(String query) {
@@ -19,12 +19,12 @@ public class PrimingRequest {
             return this;
         }
 
-        public PrimingRequestBuilder withRows(List<Map<String, Object>> rows) {
+        public PrimingRequestBuilder withRows(List<Map<String, ? extends Object>> rows) {
             this.rows = rows;
             return this;
         }
 
-        public PrimingRequestBuilder withRows(Map<String, Object>... rows) {
+        public PrimingRequestBuilder withRows(Map<String, ? extends Object>... rows) {
             this.rows = Arrays.asList(rows);
             return this;
         }
@@ -37,7 +37,7 @@ public class PrimingRequest {
         public PrimingRequest build() {
             List<Consistency> consistencies = this.consistency == null ? null : Arrays.asList(this.consistency);
 
-            List<Map<String, Object>> rowsDefaultedToEmptyForSuccess = this.rows;
+            List<Map<String, ? extends Object>> rowsDefaultedToEmptyForSuccess = this.rows;
 
             if (result == Result.success && rows == null) {
                 rowsDefaultedToEmptyForSuccess = Collections.emptyList();
@@ -67,7 +67,7 @@ public class PrimingRequest {
     private When when;
     private Then then;
 
-    private PrimingRequest(String query, List<Consistency> consistency, List<Map<String, Object>> rows, Result result, Map<String, ColumnTypes> types) {
+    private PrimingRequest(String query, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> types) {
         this.when = new When(query, consistency);
         this.then = new Then(rows, result, types);
     }
@@ -101,11 +101,11 @@ public class PrimingRequest {
     }
 
     private static class Then {
-        private List<Map<String, Object>> rows;
+        private List<Map<String, ? extends Object>> rows;
         private Result result;
         private Map<String, ColumnTypes> column_types;
 
-        private Then(List<Map<String, Object>> rows, Result result, Map<String, ColumnTypes> column_types) {
+        private Then(List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> column_types) {
             this.rows = rows;
             this.result = result;
             this.column_types = column_types;

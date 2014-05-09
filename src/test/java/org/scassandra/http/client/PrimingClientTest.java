@@ -36,7 +36,7 @@ public class PrimingClientTest {
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
-                .withRows(Collections.<Map<String, Object>>emptyList())
+                .withRows(Collections.<Map<String, ?>>emptyList())
                 .build();
         //when
         underTest.primeQuery(pr);
@@ -50,8 +50,8 @@ public class PrimingClientTest {
     public void testPrimingQueryWithMultipleRows() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
-        List<Map<String,Object>> rows = new ArrayList<>();
-        Map<String, Object> row = new HashMap<>();
+        List<Map<String,? extends Object>> rows = new ArrayList<>();
+        Map<String, String> row = new HashMap<>();
         row.put("name","Chris");
         rows.add(row);
         PrimingRequest pr = PrimingRequest.queryBuilder()
@@ -154,7 +154,7 @@ public class PrimingClientTest {
         rows.put("name","Chris");
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
-                .withRows(Arrays.asList(rows))
+                .withRows(rows)
                 .build();
         stubFor(get(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200).withBody(
                 "[{\n" +
@@ -226,7 +226,7 @@ public class PrimingClientTest {
     public void testPrimingQueryWithSets() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
-        List<Map<String,Object>> rows = new ArrayList<>();
+        List<Map<String,? extends Object>> rows = new ArrayList<>();
         Map<String, Object> row = new HashMap<>();
         Set<String> set = Sets.newHashSet("one", "two", "three");
         row.put("set",set);
@@ -253,7 +253,7 @@ public class PrimingClientTest {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         Map<String, ColumnTypes> types = ImmutableMap.of("set", ColumnTypes.Set);
-        List<Map<String,Object>> rows = new ArrayList<>();
+        List<Map<String,? extends Object>> rows = new ArrayList<>();
         Map<String, Object> row = new HashMap<>();
         Set<String> set = Sets.newHashSet("one", "two", "three");
         row.put("set",set);
@@ -280,6 +280,7 @@ public class PrimingClientTest {
     @Test
     public void testPrimingPreparedStatementWithJustQueryText() {
         //given
+        stubFor(post(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withStatus(200)));
         PrimingRequest primingRequest = PrimingRequest.preparedStatementBuilder()
                 .withQuery("select * from people where people = ?")
                 .build();
