@@ -16,7 +16,7 @@ import java.util.*;
 public class PrimingClientTest {
 
     private static final int PORT = 1234;
-    public static final String PRIME_PATH = "/prime-single";
+    public static final String PRIME_PATH = "/prime-query-single";
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(PORT);
@@ -38,7 +38,7 @@ public class PrimingClientTest {
                 .withRows(Collections.<Map<String, Object>>emptyList())
                 .build();
         //when
-        underTest.prime(pr);
+        underTest.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -58,7 +58,7 @@ public class PrimingClientTest {
                 .withRows(rows)
                 .build();
         //when
-        underTest.prime(pr);
+        underTest.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -74,7 +74,7 @@ public class PrimingClientTest {
                 .withResult(PrimingRequest.Result.read_request_timeout)
                 .build();
         //when
-        underTest.prime(pr);
+        underTest.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -91,7 +91,7 @@ public class PrimingClientTest {
                 .withResult(PrimingRequest.Result.unavailable)
                 .build();
         //when
-        pc.prime(pr);
+        pc.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -107,7 +107,7 @@ public class PrimingClientTest {
                 .withResult(PrimingRequest.Result.write_request_timeout)
                 .build();
         //when
-        underTest.prime(pr);
+        underTest.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -123,7 +123,7 @@ public class PrimingClientTest {
                 .withResult(PrimingRequest.Result.read_request_timeout)
                 .build();
         //when
-        underTest.prime(pr);
+        underTest.primeQuery(pr);
         //then
     }
 
@@ -137,7 +137,7 @@ public class PrimingClientTest {
                 .build();
 
         //when
-        underTest.prime(pr);
+        underTest.primeQuery(pr);
 
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_PATH))
@@ -233,7 +233,7 @@ public class PrimingClientTest {
                 .withRows(rows)
                 .build();
         //when
-        underTest.prime(pr);
+        underTest.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -261,7 +261,7 @@ public class PrimingClientTest {
                 .withColumnTypes(types)
                 .build();
         //when
-        underTest.prime(pr);
+        underTest.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))

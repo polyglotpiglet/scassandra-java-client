@@ -27,13 +27,13 @@ public class PrimingClient {
     private String primeUrl;
 
     public PrimingClient(String host, int port) {
-        this.primeUrl = "http://" + host + ":" + port + "/prime-single";
+        this.primeUrl = "http://" + host + ":" + port + "/prime-query-single";
     }
-
-    public void prime(PrimingRequest primeRequest) throws PrimeFailedException {
+    
+    public void primeQuery(PrimingRequest primeRequest) throws PrimeFailedException {
         HttpPost httpPost = new HttpPost(primeUrl);
         String jsonAsString = gson.toJson(primeRequest);
-        LOGGER.info("Sending prime to server {}", jsonAsString);
+        LOGGER.info("Sending primeQuery to server {}", jsonAsString);
         httpPost.setEntity(new StringEntity(jsonAsString, ContentType.APPLICATION_JSON));
         CloseableHttpResponse response1;
         try {

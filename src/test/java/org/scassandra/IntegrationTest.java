@@ -53,7 +53,7 @@ public class IntegrationTest {
 
         //then
         ac.clearConnections();
-        pc.prime(pr);
+        pc.primeQuery(pr);
     }
 
     @Test(expected = PrimeFailedException.class)
@@ -71,8 +71,8 @@ public class IntegrationTest {
                 .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ONE)
                 .build();
         //when
-        pc.prime(prWithAllAndAny);
-        pc.prime(prWithAllAndONE);
+        pc.primeQuery(prWithAllAndAny);
+        pc.primeQuery(prWithAllAndONE);
 
         //then
     }
@@ -95,7 +95,7 @@ public class IntegrationTest {
                 .build();
 
         //when
-        pc.prime(prime);
+        pc.primeQuery(prime);
         List<PrimingRequest> primes = pc.retrievePrimes();
         //then
         assertEquals(1, primes.size());
