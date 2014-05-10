@@ -18,14 +18,14 @@ public class IntegrationTest {
     private static int binaryPort = 2345;
     private static int adminPort = 3456;
     public static final Scassandra SERVER = ScassandraFactory.createServer(binaryPort, adminPort);
-    private static ActivityClient ac;
-    private static PrimingClient pc;
+    private static ActivityClient activityClient;
+    private static PrimingClient primingClient;
 
     @BeforeClass
     public static void startScassandra() {
         SERVER.start();
-        ac = new ActivityClient("localhost", adminPort);
-        pc = new PrimingClient("localhost", adminPort);
+        activityClient = new ActivityClient("localhost", adminPort);
+        primingClient = new PrimingClient("localhost", adminPort);
     }
 
     @AfterClass
@@ -35,9 +35,9 @@ public class IntegrationTest {
 
     @Before
     public void setup() {
-        ac.clearConnections();
-        ac.clearQueries();
-        pc.clearPrimes();
+        activityClient.clearConnections();
+        activityClient.clearQueries();
+        primingClient.clearPrimes();
     }
 
     @Test
@@ -50,8 +50,8 @@ public class IntegrationTest {
                 .build();
 
         //then
-        ac.clearConnections();
-        pc.primeQuery(pr);
+        activityClient.clearConnections();
+        primingClient.primeQuery(pr);
     }
 
     @Test(expected = PrimeFailedException.class)
@@ -66,8 +66,8 @@ public class IntegrationTest {
                 .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ONE)
                 .build();
         //when
-        pc.primeQuery(prWithAllAndAny);
-        pc.primeQuery(prWithAllAndONE);
+        primingClient.primeQuery(prWithAllAndAny);
+        primingClient.primeQuery(prWithAllAndONE);
 
         //then
     }
@@ -75,7 +75,7 @@ public class IntegrationTest {
     @Test
     public void testQueryPrimeAndRetrieveOfPrime() {
         //given
-        Map<String, Object> row = new HashMap<>();
+        Map<String, Object> row = new HashMap<String, Object>();
         row.put("name", "chris");
         PrimingRequest prime = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
@@ -85,8 +85,8 @@ public class IntegrationTest {
                 .build();
 
         //when
-        pc.primeQuery(prime);
-        List<PrimingRequest> primes = pc.retrievePrimes();
+        primingClient.primeQuery(prime);
+        List<PrimingRequest> primes = primingClient.retrievePrimes();
         //then
         assertEquals(1, primes.size());
         assertEquals(prime, primes.get(0));
@@ -95,7 +95,7 @@ public class IntegrationTest {
     @Test
     public void testPreparedPrime() {
         //given
-        Map<String, String> row = new HashMap<>();
+        Map<String, String> row = new HashMap<String, String>();
         row.put("name", "chris");
         PrimingRequest prime = PrimingRequest.queryBuilder()
                 .withQuery("select * from people where name = ?")
@@ -103,7 +103,7 @@ public class IntegrationTest {
                 .build();
 
         //when
-        pc.primePreparedStatement(prime);
+        primingClient.primePreparedStatement(prime);
         //then
     }
 }

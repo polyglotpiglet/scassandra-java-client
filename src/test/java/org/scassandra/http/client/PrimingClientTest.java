@@ -50,8 +50,8 @@ public class PrimingClientTest {
     public void testPrimingQueryWithMultipleRows() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
-        List<Map<String,? extends Object>> rows = new ArrayList<>();
-        Map<String, String> row = new HashMap<>();
+        List<Map<String,? extends Object>> rows = new ArrayList<Map<String,? extends Object>>();
+        Map<String, String> row = new HashMap<String, String>();
         row.put("name","Chris");
         rows.add(row);
         PrimingRequest pr = PrimingRequest.queryBuilder()
@@ -150,7 +150,7 @@ public class PrimingClientTest {
     @Test
     public void testRetrieveOfPreviousQueryPrimes() {
         //given
-        Map<String, Object> rows = new HashMap<>();
+        Map<String, Object> rows = new HashMap<String, Object>();
         rows.put("name","Chris");
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
@@ -226,8 +226,8 @@ public class PrimingClientTest {
     public void testPrimingQueryWithSets() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
-        List<Map<String,? extends Object>> rows = new ArrayList<>();
-        Map<String, Object> row = new HashMap<>();
+        List<Map<String,? extends Object>> rows = new ArrayList<Map<String,? extends Object>>();
+        Map<String, Object> row = new HashMap<String, Object>();
         Set<String> set = Sets.newHashSet("one", "two", "three");
         row.put("set",set);
         rows.add(row);
@@ -253,8 +253,8 @@ public class PrimingClientTest {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         Map<String, ColumnTypes> types = ImmutableMap.of("set", ColumnTypes.Set);
-        List<Map<String,? extends Object>> rows = new ArrayList<>();
-        Map<String, Object> row = new HashMap<>();
+        List<Map<String,? extends Object>> rows = new ArrayList<Map<String, ? extends Object>>();
+        Map<String, Object> row = new HashMap<String, Object>();
         Set<String> set = Sets.newHashSet("one", "two", "three");
         row.put("set",set);
         rows.add(row);
