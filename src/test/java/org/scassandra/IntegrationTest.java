@@ -1,9 +1,6 @@
 package org.scassandra;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.scassandra.http.client.ActivityClient;
 import org.scassandra.http.client.PrimeFailedException;
 import org.scassandra.http.client.PrimingClient;
