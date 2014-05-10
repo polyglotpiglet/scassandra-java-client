@@ -2,6 +2,7 @@ package org.scassandra;
 
 import org.junit.*;
 import org.scassandra.http.client.ActivityClient;
+import org.scassandra.http.client.ActivityClient.ActivityClientBuilder;
 import org.scassandra.http.client.PrimeFailedException;
 import org.scassandra.http.client.PrimingClient;
 import org.scassandra.http.client.PrimingRequest;
@@ -21,7 +22,11 @@ public class IntegrationTest {
     @BeforeClass
     public static void startScassandra() {
         SERVER.start();
-        activityClient = new ActivityClient("localhost", adminPort);
+
+        activityClient = ActivityClient.getBuilder()
+                .withHost("localhost")
+                .withAdminPort(adminPort).build();
+
         primingClient = new PrimingClient("localhost", adminPort);
     }
 

@@ -23,14 +23,42 @@ import java.util.List;
  */
 public class ActivityClient {
 
+
+    public static class ActivityClientBuilder {
+
+        private String host;
+        private int adminPort;
+
+        private ActivityClientBuilder() {}
+
+        public ActivityClientBuilder withHost(String host){
+            this.host = host;
+            return this;
+        }
+
+        public ActivityClientBuilder withAdminPort(int adminPort){
+            this.adminPort = adminPort;
+            return this;
+        }
+
+        public ActivityClient build(){
+            return new ActivityClient(this.host, this.adminPort);
+
+        }
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ActivityClient.class);
+
+    public static ActivityClientBuilder getBuilder() { return new ActivityClientBuilder(); }
 
     private Gson gson = new Gson();
     private CloseableHttpClient httpClient = HttpClients.createDefault();
     private String connectionUrl;
     private String queryUrl;
 
-    public ActivityClient(String host, int adminPort) {
+    private ActivityClient() {}
+
+    private ActivityClient(String host, int adminPort) {
         RequestConfig.Builder requestBuilder = RequestConfig.custom();
         requestBuilder = requestBuilder.setConnectTimeout(500);
         requestBuilder = requestBuilder.setConnectionRequestTimeout(500);
