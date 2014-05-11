@@ -2,6 +2,7 @@ package org.scassandra.http.client;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
+import static org.scassandra.http.client.ActivityClient.*;
 
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -21,7 +22,9 @@ public class ActivityClientTest {
 
     @Before
     public void setup() {
-        underTest = new ActivityClient("localhost", PORT);
+
+        ActivityClientBuilder builder = ActivityClient.getBuilder();
+        underTest = builder.withHost("localhost").withAdminPort(PORT).build();
     }
 
     @Test

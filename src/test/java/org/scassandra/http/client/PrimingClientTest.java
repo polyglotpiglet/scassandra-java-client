@@ -228,7 +228,7 @@ public class PrimingClientTest {
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         List<Map<String,? extends Object>> rows = new ArrayList<Map<String,? extends Object>>();
         Map<String, Object> row = new HashMap<String, Object>();
-        Set<String> set = Sets.newHashSet("one", "two", "three");
+        List<String> set = Arrays.asList("one", "two", "three");
         row.put("set",set);
         rows.add(row);
         PrimingRequest pr = PrimingRequest.queryBuilder()
@@ -243,7 +243,7 @@ public class PrimingClientTest {
                 .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"}," +
                         "\"then\":{" +
                         "\"rows\":[" +
-                        "{\"set\":[\"two\",\"three\",\"one\"]}]," +
+                        "{\"set\":[\"one\",\"two\",\"three\"]}]," +
                         "\"result\":\"success\"}}")));
 
     }
