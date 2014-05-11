@@ -26,7 +26,7 @@ public class PrimingClientTest {
 
     @Before
     public void setup() {
-        underTest = new PrimingClient("localhost", PORT);
+        underTest = PrimingClient.builder().withHost("localhost").withPort(PORT).build();
     }
 
 
@@ -86,7 +86,7 @@ public class PrimingClientTest {
     public void testPrimingQueryUnavailableException() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
-        PrimingClient pc = new PrimingClient("localhost", PORT);
+        PrimingClient pc = PrimingClient.builder().withHost("localhost").withPort(PORT).build();
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.unavailable)

@@ -1,10 +1,35 @@
 package org.scassandra.http.client;
 
 public class Query {
+    
+    public static class QueryBuilder {
+
+        private String query;
+        private String consistency;
+
+        private QueryBuilder() {}
+
+        public QueryBuilder withQuery(String query){
+            this.query = query;
+            return this;
+        }
+
+        public QueryBuilder withConsistency(String consistency){
+            this.consistency = consistency;
+            return this;
+        }
+        
+        public Query build(){
+            return new Query(this.query, this.consistency);
+        }
+    }
+
+    public static QueryBuilder builder() { return new QueryBuilder(); }
+
     private String query;
     private String consistency;
 
-    public Query(String query, String consistency) {
+    private Query(String query, String consistency) {
         this.query = query;
         this.consistency = consistency;
     }
