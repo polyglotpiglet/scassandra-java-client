@@ -79,7 +79,7 @@ public class PrimingClient {
 
     }
 
-    public void clearPrimes() {
+    public void clearQueryPrimes() {
         HttpDelete delete = new HttpDelete(primeQueryUrl);
         CloseableHttpResponse httpResponse = null;
         try {
@@ -100,7 +100,7 @@ public class PrimingClient {
         }
     }
 
-    public List<PrimingRequest> retrievePrimes() {
+    public List<PrimingRequest> retrieveQueryPrimes() {
         HttpGet get = new HttpGet(primeQueryUrl);
         try {
             CloseableHttpResponse httpResponse = httpClient.execute(get);

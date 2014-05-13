@@ -9,7 +9,8 @@ public class PrimingRequest {
         private PrimingRequestBuilder() {}
 
         private Consistency[] consistency;
-        private Map<String, ColumnTypes> types;
+        private ColumnTypes[] variableTypes;
+        private Map<String, ColumnTypes> columnTypes;
         private String query;
         private List<Map<String, ? extends Object>> rows;
         private Result result = Result.success;
@@ -42,7 +43,7 @@ public class PrimingRequest {
             if (result == Result.success && rows == null) {
                 rowsDefaultedToEmptyForSuccess = Collections.emptyList();
             }
-            return new PrimingRequest(this.query, consistencies, rowsDefaultedToEmptyForSuccess, this.result, this.types);
+            return new PrimingRequest(this.query, consistencies, rowsDefaultedToEmptyForSuccess, this.result, this.columnTypes, this.variableTypes);
         }
 
         public PrimingRequestBuilder withConsistency(Consistency... consistencies) {
@@ -51,7 +52,12 @@ public class PrimingRequest {
         }
 
         public PrimingRequestBuilder withColumnTypes(Map<String, ColumnTypes> types) {
-            this.types = types;
+            this.columnTypes = types;
+            return this;
+        }
+
+        public PrimingRequestBuilder withVariableTypes(ColumnTypes... variableTypes) {
+            this.variableTypes = variableTypes;
             return this;
         }
     }
@@ -67,9 +73,9 @@ public class PrimingRequest {
     private When when;
     private Then then;
 
-    private PrimingRequest(String query, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> types) {
+    private PrimingRequest(String query, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> columnTypes, ColumnTypes[] variableTypes) {
         this.when = new When(query, consistency);
-        this.then = new Then(rows, result, types);
+        this.then = new Then(rows, result, columnTypes, variableTypes);
     }
 
     @Override
@@ -101,22 +107,16 @@ public class PrimingRequest {
     }
 
     private static class Then {
+        private final ColumnTypes[] variable_types;
         private List<Map<String, ? extends Object>> rows;
         private Result result;
         private Map<String, ColumnTypes> column_types;
 
-        private Then(List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> column_types) {
+        private Then(List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> column_types, ColumnTypes[] variable_types) {
             this.rows = rows;
             this.result = result;
             this.column_types = column_types;
-        }
-
-        @Override
-        public String toString() {
-            return "Then{" +
-                    "rows=" + rows +
-                    ", result=" + result +
-                    '}';
+            this.variable_types = variable_types;
         }
 
         @Override
@@ -126,18 +126,35 @@ public class PrimingRequest {
 
             Then then = (Then) o;
 
+            if (column_types != null ? !column_types.equals(then.column_types) : then.column_types != null)
+                return false;
             if (result != then.result) return false;
             if (rows != null ? !rows.equals(then.rows) : then.rows != null) return false;
+            if (!Arrays.equals(variable_types, then.variable_types)) return false;
 
             return true;
         }
 
         @Override
         public int hashCode() {
-            int result1 = rows != null ? rows.hashCode() : 0;
+            int result1 = variable_types != null ? Arrays.hashCode(variable_types) : 0;
+            result1 = 31 * result1 + (rows != null ? rows.hashCode() : 0);
             result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
+            result1 = 31 * result1 + (column_types != null ? column_types.hashCode() : 0);
             return result1;
         }
+
+        @Override
+        public String toString() {
+            return "Then{" +
+                    "variable_types=" + Arrays.toString(variable_types) +
+                    ", rows=" + rows +
+                    ", result=" + result +
+                    ", column_types=" + column_types +
+                    '}';
+        }
+
+
     }
 
     private static class When {
