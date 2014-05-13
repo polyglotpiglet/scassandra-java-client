@@ -35,7 +35,7 @@ public class ActivityClient {
             return this;
         }
 
-        public ActivityClientBuilder withAdminPort(int adminPort){
+        public ActivityClientBuilder withPort(int adminPort){
             this.adminPort = adminPort;
             return this;
         }

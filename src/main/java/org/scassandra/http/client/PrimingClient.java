@@ -22,7 +22,7 @@ public class PrimingClient {
     public static class PrimingClientBuilder {
 
         private String host = "localhost";
-        private int port = 8042;
+        private int port = 8043;
 
         private PrimingClientBuilder() {}
 

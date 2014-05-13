@@ -24,7 +24,7 @@ public class ActivityClientTest {
     public void setup() {
 
         ActivityClientBuilder builder = ActivityClient.builder();
-        underTest = builder.withHost("localhost").withAdminPort(PORT).build();
+        underTest = builder.withHost("localhost").withPort(PORT).build();
     }
 
     @Test

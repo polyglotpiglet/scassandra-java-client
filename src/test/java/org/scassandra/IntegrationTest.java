@@ -24,7 +24,7 @@ public class IntegrationTest {
 
         activityClient = ActivityClient.builder()
                 .withHost("localhost")
-                .withAdminPort(adminPort).build();
+                .withPort(adminPort).build();
 
         primingClient = PrimingClient.builder()
                 .withHost("localhost")
