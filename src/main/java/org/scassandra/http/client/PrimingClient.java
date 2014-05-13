@@ -22,7 +22,7 @@ public class PrimingClient {
     public static class PrimingClientBuilder {
 
         private String host = "localhost";
-        private int port = 8042;
+        private int port = 8043;
 
         private PrimingClientBuilder() {}
 
@@ -122,6 +122,7 @@ public class PrimingClient {
     public void primePreparedStatement(PrimingRequest primingRequest) {
         HttpPost httpPost = new HttpPost(primePreparedUrl);
         String primeAsJson = gson.toJson(primingRequest);
+        LOGGER.info("Sending prime prepared statement to server {}", primeAsJson);
         httpPost.setEntity(new StringEntity(primeAsJson, ContentType.APPLICATION_JSON));
         try {
             CloseableHttpResponse response = httpClient.execute(httpPost);

@@ -35,7 +35,7 @@ public class ActivityClient {
             return this;
         }
 
-        public ActivityClientBuilder withAdminPort(int adminPort){
+        public ActivityClientBuilder withPort(int adminPort){
             this.adminPort = adminPort;
             return this;
         }
@@ -51,10 +51,9 @@ public class ActivityClient {
 
     private Gson gson = new Gson();
     private CloseableHttpClient httpClient = HttpClients.createDefault();
-    private String connectionUrl;
-    private String queryUrl;
-
-    private ActivityClient() {}
+    private final String connectionUrl;
+    private final String queryUrl;
+    private final String preparedStatementExecutionUrl;
 
     private ActivityClient(String host, int adminPort) {
         RequestConfig.Builder requestBuilder = RequestConfig.custom();
@@ -66,6 +65,7 @@ public class ActivityClient {
         httpClient = builder.build();
         this.connectionUrl = "http://" + host + ":" + adminPort + "/connection";
         this.queryUrl = "http://" + host + ":" + adminPort + "/query";
+        this.preparedStatementExecutionUrl = "http://" + host + ":" + adminPort + "/prepared-statement-execution";
     }
 
     /**
@@ -134,4 +134,37 @@ public class ActivityClient {
             throw new ActivityRequestFailed();
         }
     }
+
+
+    public void clearPreparedStatementExecutions() {
+        HttpDelete delete = new HttpDelete(preparedStatementExecutionUrl);
+        try {
+            CloseableHttpResponse httpResponse = httpClient.execute(delete);
+            EntityUtils.consumeQuietly(httpResponse.getEntity());
+        } catch (IOException e) {
+            LOGGER.warn("clearing of connections failed",e);
+            throw new ActivityRequestFailed();
+        }
+    }
+
+    public List<PreparedStatementExecution> retrievePreparedStatementExecutions() {
+        HttpGet get = new HttpGet(preparedStatementExecutionUrl);
+        try {
+            CloseableHttpResponse response = httpClient.execute(get);
+            String body = EntityUtils.toString(response.getEntity());
+            LOGGER.debug("Received response {}", body);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                LOGGER.info("Non 200 status code when retrieving prepared statement executions {}", statusCode);
+                throw new ActivityRequestFailed();
+            }
+            PreparedStatementExecution[] executions = (PreparedStatementExecution[]) gson.fromJson(body, (Class) PreparedStatementExecution[].class);
+            LOGGER.debug("Parsed prepared statement executions {}", Arrays.toString(executions));
+            return Arrays.asList(executions);
+        } catch (IOException e) {
+            LOGGER.info("Request for queries failed", e);
+            throw new ActivityRequestFailed();
+        }
+    }
+
 }

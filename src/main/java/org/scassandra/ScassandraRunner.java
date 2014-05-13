@@ -4,13 +4,9 @@ import uk.co.scassandra.ServerStubRunner;
 
 class ScassandraRunner implements Scassandra {
 
-    private final int binaryPort;
-    private final int adminPort;
     private final ServerStubRunner serverStubRunner;
 
     public ScassandraRunner(int binaryPort, int adminPort) {
-        this.binaryPort = binaryPort;
-        this.adminPort = adminPort;
         serverStubRunner = new ServerStubRunner(binaryPort, adminPort);
     }
 
