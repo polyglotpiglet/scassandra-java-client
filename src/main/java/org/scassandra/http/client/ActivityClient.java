@@ -23,7 +23,6 @@ import java.util.List;
  */
 public class ActivityClient {
 
-
     public static class ActivityClientBuilder {
 
         private String host = "localhost";
@@ -136,6 +135,17 @@ public class ActivityClient {
         }
     }
 
+
+    public void clearPreparedStatementExecutions() {
+        HttpDelete delete = new HttpDelete(preparedStatementExecutionUrl);
+        try {
+            CloseableHttpResponse httpResponse = httpClient.execute(delete);
+            EntityUtils.consumeQuietly(httpResponse.getEntity());
+        } catch (IOException e) {
+            LOGGER.warn("clearing of connections failed",e);
+            throw new ActivityRequestFailed();
+        }
+    }
 
     public List<PreparedStatementExecution> retrievePreparedStatementExecutions() {
         HttpGet get = new HttpGet(preparedStatementExecutionUrl);

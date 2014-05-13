@@ -182,4 +182,25 @@ public class ActivityClientTest {
         underTest.retrievePreparedStatementExecutions();
         //then
     }
+
+    @Test
+    public void testDeletingOfPreparedExecutionHistory() {
+        //given
+        stubFor(delete(urlEqualTo("/prepared-statement-execution"))
+                .willReturn(aResponse().withStatus(200)));
+        //when
+        underTest.clearPreparedStatementExecutions();
+        //then
+        verify(deleteRequestedFor(urlEqualTo("/prepared-statement-execution")));
+    }
+
+    @Test(expected = ActivityRequestFailed.class)
+    public void testDeletingOfPreparedExecutionHistoryFailure() {
+        //given
+        stubFor(delete(urlEqualTo("/prepared-statement-execution"))
+                .willReturn(aResponse().withStatus(200).withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        //when
+        underTest.clearPreparedStatementExecutions();
+        //then
+    }
 }
