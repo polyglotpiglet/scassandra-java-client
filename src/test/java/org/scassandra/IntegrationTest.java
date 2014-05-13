@@ -10,6 +10,9 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
+/*
+TODO: Break up into multiple integration tests.
+ */
 public class IntegrationTest {
 
     private static int binaryPort = 2345;
@@ -107,6 +110,14 @@ public class IntegrationTest {
 
         //when
         primingClient.primePreparedStatement(prime);
+        //then
+    }
+
+    @Test
+    public void testActivityRetrieveOfPreparedStatementExecutions() throws Exception {
+        //given
+        //when
+        activityClient.retrievePreparedStatementExecutions();
         //then
     }
 }

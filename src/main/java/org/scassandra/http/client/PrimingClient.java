@@ -122,6 +122,7 @@ public class PrimingClient {
     public void primePreparedStatement(PrimingRequest primingRequest) {
         HttpPost httpPost = new HttpPost(primePreparedUrl);
         String primeAsJson = gson.toJson(primingRequest);
+        LOGGER.info("Sending prime prepared statement to server {}", primeAsJson);
         httpPost.setEntity(new StringEntity(primeAsJson, ContentType.APPLICATION_JSON));
         try {
             CloseableHttpResponse response = httpClient.execute(httpPost);

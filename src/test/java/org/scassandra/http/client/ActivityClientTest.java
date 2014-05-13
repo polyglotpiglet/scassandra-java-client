@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class ActivityClientTest {
@@ -141,4 +142,44 @@ public class ActivityClientTest {
 
     }
 
+    @Test
+    public void retrievingPreparedStatementExecutions() throws Exception {
+        //given
+        stubFor(get(urlEqualTo("/prepared-statement-execution"))
+                .willReturn(aResponse().withStatus(200).withBody(
+                "[{\n" +
+                        "  \"preparedStatementText\": \"select * from people where name = ?\",\n" +
+                        "  \"consistency\": \"ONE\",\n" +
+                        "  \"variables\": [\"Chris\"]\n" +
+                        "}]"
+                )));
+        //when
+        List<PreparedStatementExecution> executions = underTest.retrievePreparedStatementExecutions();
+        //then
+        assertEquals(1, executions.size());
+        PreparedStatementExecution singleExecution = executions.get(0);
+        assertEquals("ONE", singleExecution.getConsistency());
+        assertEquals("select * from people where name = ?", singleExecution.getPreparedStatementText());
+        assertEquals(Arrays.asList("Chris"), singleExecution.getVariables());
+    }
+
+    @Test(expected = ActivityRequestFailed.class)
+    public void retrievingPreparedStatementExecutionsFailure() throws Exception {
+        //given
+        stubFor(get(urlEqualTo("/prepared-statement-execution"))
+                .willReturn(aResponse().withStatus(200).withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+        //when
+        underTest.retrievePreparedStatementExecutions();
+        //then
+    }
+
+    @Test(expected = ActivityRequestFailed.class)
+    public void retrievingPreparedStatementExecutionsNot200() throws Exception {
+        //given
+        stubFor(get(urlEqualTo("/prepared-statement-execution"))
+                .willReturn(aResponse().withStatus(500)));
+        //when
+        underTest.retrievePreparedStatementExecutions();
+        //then
+    }
 }
