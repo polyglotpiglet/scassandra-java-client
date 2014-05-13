@@ -23,11 +23,10 @@ import java.util.List;
  */
 public class ActivityClient {
 
-
     public static class ActivityClientBuilder {
 
-        private String host;
-        private int adminPort;
+        private String host = "localhost";
+        private int adminPort = 8043;
 
         private ActivityClientBuilder() {}
 
@@ -43,13 +42,12 @@ public class ActivityClient {
 
         public ActivityClient build(){
             return new ActivityClient(this.host, this.adminPort);
-
         }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActivityClient.class);
 
-    public static ActivityClientBuilder getBuilder() { return new ActivityClientBuilder(); }
+    public static ActivityClientBuilder builder() { return new ActivityClientBuilder(); }
 
     private Gson gson = new Gson();
     private CloseableHttpClient httpClient = HttpClients.createDefault();

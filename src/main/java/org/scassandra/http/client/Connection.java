@@ -1,9 +1,29 @@
 package org.scassandra.http.client;
 
 public class Connection {
+
+    public static class ConnectionBuilder {
+
+        private String result;
+
+        private ConnectionBuilder() {}
+
+        public ConnectionBuilder withResult(String result) {
+            this.result = result;
+            return this;
+        }
+
+        public Connection build() {
+            return new Connection(this.result);
+        }
+
+    }
+
+    public static ConnectionBuilder builder() { return new ConnectionBuilder(); }
+
     private String result;
 
-    public Connection(String result) {
+    private Connection(String result) {
         this.result = result;
     }
 

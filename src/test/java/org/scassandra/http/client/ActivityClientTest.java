@@ -23,7 +23,7 @@ public class ActivityClientTest {
     @Before
     public void setup() {
 
-        ActivityClientBuilder builder = ActivityClient.getBuilder();
+        ActivityClientBuilder builder = ActivityClient.builder();
         underTest = builder.withHost("localhost").withAdminPort(PORT).build();
     }
 

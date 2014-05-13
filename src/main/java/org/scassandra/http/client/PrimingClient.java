@@ -19,14 +19,38 @@ import java.util.List;
 
 public class PrimingClient {
 
+    public static class PrimingClientBuilder {
+
+        private String host = "localhost";
+        private int port = 8042;
+
+        private PrimingClientBuilder() {}
+
+        public PrimingClientBuilder withHost(String host){
+            this.host = host;
+            return this;
+        }
+
+        public PrimingClientBuilder withPort(int port){
+            this.port = port;
+            return this;
+        }
+
+        public PrimingClient build(){
+            return new PrimingClient(this.host, this.port);
+        }
+    }
+
     private static final Logger LOGGER = LoggerFactory.getLogger(PrimingClient.class);
+
+    public static PrimingClientBuilder builder() { return new PrimingClientBuilder(); }
 
     private Gson gson = new Gson();
     private CloseableHttpClient httpClient = HttpClients.createDefault();
     private String primeQueryUrl;
     private String primePreparedUrl;
 
-    public PrimingClient(String host, int port) {
+    private PrimingClient(String host, int port) {
         this.primeQueryUrl = "http://" + host + ":" + port + "/prime-query-single";
         this.primePreparedUrl = "http://" + host + ":" + port + "/prime-prepared-single";
     }
