@@ -1,10 +1,8 @@
 package org.scassandra;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.*;
-import org.scassandra.http.client.ActivityClient;
-import org.scassandra.http.client.PrimeFailedException;
-import org.scassandra.http.client.PrimingClient;
-import org.scassandra.http.client.PrimingRequest;
+import org.scassandra.http.client.*;
 
 import java.util.*;
 
@@ -43,7 +41,7 @@ public class IntegrationTest {
     public void setup() {
         activityClient.clearConnections();
         activityClient.clearQueries();
-        primingClient.clearPrimes();
+        primingClient.clearQueryPrimes();
     }
 
     @Test
@@ -92,10 +90,17 @@ public class IntegrationTest {
 
         //when
         primingClient.primeQuery(prime);
-        List<PrimingRequest> primes = primingClient.retrievePrimes();
+        List<PrimingRequest> primes = primingClient.retrieveQueryPrimes();
         //then
+        PrimingRequest expectedPrimeWithDefaults = PrimingRequest.queryBuilder()
+                .withQuery("select * from people")
+                .withRows(row)
+                .withColumnTypes(ImmutableMap.of("name", ColumnTypes.Varchar))
+                .withResult(PrimingRequest.Result.success)
+                .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ANY)
+                .build();
         assertEquals(1, primes.size());
-        assertEquals(prime, primes.get(0));
+        assertEquals(expectedPrimeWithDefaults, primes.get(0));
     }
 
     @Test
