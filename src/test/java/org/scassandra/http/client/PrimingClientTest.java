@@ -258,7 +258,7 @@ public class PrimingClientTest {
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
         Map<String, ColumnTypes> types = ImmutableMap.of("set_column", ColumnTypes.Set);
         Map<String, Object> row = new HashMap<String, Object>();
-        Set<String> set = Sets.newHashSet("one", "two", "three");
+        List<String> set = Arrays.asList("one", "two", "three");
         row.put("set_column",set);
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
@@ -274,9 +274,9 @@ public class PrimingClientTest {
                 .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
                         "\"then\":{" +
                         "\"rows\":[" +
-                        "{\"set_column\":[\"two\",\"three\",\"one\"]}]," +
+                        "{\"set_column\":[\"one\",\"two\",\"three\"]}]," +
                         "\"result\":\"success\"" +
-                        ",\"column_types\":{\"set_column\":\"Set\"}}}")));
+                        ",\"column_types\":{\"set_column\":\"set\"}}}")));
     }
 
     @Test
@@ -296,7 +296,7 @@ public class PrimingClientTest {
                 .withRequestBody(equalToJson("{" +
                         "   \"when\": { " +
                         "     \"query\" :\"select * from people where people = ?\"" +
-                        "   },\n" +
+                        "   }," +
                         "   \"then\": {" +
                         "     \"rows\" :[]," +
                         "     \"result\":\"success\" " +
@@ -350,4 +350,44 @@ public class PrimingClientTest {
         //then
     }
 
+    @Test
+    public void retrievingOfPreparedStatementPrimes() {
+        //given
+        Map<String, Object> rows = new HashMap<String, Object>();
+        rows.put("name","Chris");
+        PrimingRequest pr = PrimingRequest.preparedStatementBuilder()
+                .withQuery("select * from people")
+                .withConsistency(PrimingRequest.Consistency.ANY)
+                .withVariableTypes(ColumnTypes.Varchar)
+                .withColumnTypes(ImmutableMap.of("name", ColumnTypes.Varchar))
+                .withRows(rows)
+                .build();
+        stubFor(get(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withStatus(200).withBody(
+                "[{" +
+                        "  \"when\": {" +
+                        "    \"query\": \"select * from people\"," +
+                        "    \"consistency\": [\"ANY\"]" +
+                        "  }," +
+                        "  \"then\": {" +
+                        "    \"variable_types\": [" +
+                        "      \"varchar\"" +
+                        "    ]," +
+                        "    \"rows\": [" +
+                        "      {" +
+                        "        \"name\": \"Chris\"" +
+                        "      }" +
+                        "    ]," +
+                        "    \"result\": \"success\"," +
+                        "    \"column_types\": {" +
+                        "      \"name\": \"varchar\"" +
+                        "    }" +
+                        "  }" +
+                        "}]"
+        )));
+        //when
+        List<PrimingRequest> primingRequests = underTest.retrievePreparedPrimes();
+        //then
+        assertEquals(1, primingRequests.size());
+        assertEquals(pr, primingRequests.get(0));
+    }
 }

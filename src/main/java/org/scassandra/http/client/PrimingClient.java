@@ -137,4 +137,25 @@ public class PrimingClient {
             throw new PrimeFailedException();
         }
     }
+
+
+    public List<PrimingRequest> retrievePreparedPrimes() {
+        HttpGet get = new HttpGet(primePreparedUrl);
+        try {
+            CloseableHttpResponse httpResponse = httpClient.execute(get);
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                LOGGER.info("Retrieving of primes failed with http status {}", statusCode);
+                throw new PrimeFailedException();
+            }
+            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
+            LOGGER.debug("Received response from scassandra {}", responseAsString);
+            PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
+            return Arrays.asList(primes);
+        } catch (IOException e) {
+            LOGGER.info("retrieving failed", e);
+            throw new PrimeFailedException();
+        }
+    }
+
 }
