@@ -5,7 +5,7 @@ public class Query {
     public static class QueryBuilder {
 
         private String query;
-        private String consistency;
+        private String consistency = "ONE";
 
         private QueryBuilder() {}
 
@@ -14,12 +14,18 @@ public class Query {
             return this;
         }
 
+        /**
+         * Defaults to ONE if not set.
+         */
         public QueryBuilder withConsistency(String consistency){
             this.consistency = consistency;
             return this;
         }
         
         public Query build(){
+            if (query == null) {
+                throw new IllegalStateException("Must set query");
+            }
             return new Query(this.query, this.consistency);
         }
     }
