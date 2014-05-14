@@ -56,31 +56,51 @@ public class PrimingClient {
     }
     
     public void primeQuery(PrimingRequest primeRequest) throws PrimeFailedException {
-        HttpPost httpPost = new HttpPost(primeQueryUrl);
-        String jsonAsString = gson.toJson(primeRequest);
-        LOGGER.info("Sending primeQuery to server {}", jsonAsString);
-        httpPost.setEntity(new StringEntity(jsonAsString, ContentType.APPLICATION_JSON));
-        CloseableHttpResponse response1 = null;
-        try {
-            response1 = httpClient.execute(httpPost);
-        } catch (IOException e) {
-            LOGGER.warn("priming failed", e);
-            throw new PrimeFailedException();
-        } finally {
-            if (response1 != null) {
-                EntityUtils.consumeQuietly(response1.getEntity());
-            }
-        }
+        prime(primeRequest, primeQueryUrl);
+    }
 
-        if (response1.getStatusLine().getStatusCode() != 200) {
-            LOGGER.warn("Priming came back with non-200 response code {}", response1.getStatusLine());
-            throw new PrimeFailedException();
-        }
+    public void primePreparedStatement(PrimingRequest primeRequest) throws PrimeFailedException {
+        prime(primeRequest, primePreparedUrl);
+    }
 
+    public List<PrimingRequest> retrievePreparedPrimes() {
+        return httpGetPrimingRequests(primePreparedUrl);
+    }
+
+    public List<PrimingRequest> retrieveQueryPrimes() {
+        return httpGetPrimingRequests(primeQueryUrl);
     }
 
     public void clearQueryPrimes() {
-        HttpDelete delete = new HttpDelete(primeQueryUrl);
+        httpDelete(primeQueryUrl);
+    }
+
+    public void clearPreparedPrimes() {
+        httpDelete(primePreparedUrl);
+    }
+
+    private List<PrimingRequest> httpGetPrimingRequests(String url) {
+        HttpGet get = new HttpGet(url);
+        try {
+            CloseableHttpResponse httpResponse = httpClient.execute(get);
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
+            if (statusCode != 200) {
+                LOGGER.info("Retrieving of primes failed with http status {} body {}", statusCode, responseAsString);
+                throw new PrimeFailedException();
+            }
+            LOGGER.debug("Received response from scassandra {}", responseAsString);
+            PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
+            return Arrays.asList(primes);
+        } catch (IOException e) {
+            LOGGER.info("retrieving failed", e);
+            throw new PrimeFailedException();
+        }
+    }
+
+    private void httpDelete(String url){
+
+        HttpDelete delete = new HttpDelete(url);
         CloseableHttpResponse httpResponse = null;
         try {
             httpResponse = httpClient.execute(delete);
@@ -100,63 +120,25 @@ public class PrimingClient {
         }
     }
 
-    public List<PrimingRequest> retrieveQueryPrimes() {
-        HttpGet get = new HttpGet(primeQueryUrl);
+    private void prime(PrimingRequest primeRequest, String url) {
+        HttpPost httpPost = new HttpPost(url);
+        String jsonAsString = gson.toJson(primeRequest);
+        LOGGER.info("Sending {} to url {}", jsonAsString, url);
+        httpPost.setEntity(new StringEntity(jsonAsString, ContentType.APPLICATION_JSON));
+        CloseableHttpResponse response = null;
         try {
-            CloseableHttpResponse httpResponse = httpClient.execute(get);
-            int statusCode = httpResponse.getStatusLine().getStatusCode();
-            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
-            if (statusCode != 200) {
-                LOGGER.info("Retrieving of primes failed with http status {} body {}", statusCode, responseAsString);
-                throw new PrimeFailedException();
-            }
-            LOGGER.debug("Received response from scassandra {}", responseAsString);
-            PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
-            return Arrays.asList(primes);
+            response = httpClient.execute(httpPost);
         } catch (IOException e) {
-            LOGGER.info("retrieving failed", e);
+            LOGGER.warn("Priming failed", e);
             throw new PrimeFailedException();
-        }
-    }
-
-    public void primePreparedStatement(PrimingRequest primingRequest) {
-        HttpPost httpPost = new HttpPost(primePreparedUrl);
-        String primeAsJson = gson.toJson(primingRequest);
-        LOGGER.info("Sending prime prepared statement to server {}", primeAsJson);
-        httpPost.setEntity(new StringEntity(primeAsJson, ContentType.APPLICATION_JSON));
-        try {
-            CloseableHttpResponse response = httpClient.execute(httpPost);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                String body = EntityUtils.toString(response.getEntity());
-                LOGGER.info("Prime failed with status code {} and body {}", statusCode, body);
-                throw new PrimeFailedException("Response code from server: " + statusCode);
-
-            } else {
+        } finally {
+            if (response != null) {
                 EntityUtils.consumeQuietly(response.getEntity());
             }
-        } catch (IOException e) {
-            LOGGER.info("failed prepared prime {}", e);
-            throw new PrimeFailedException();
         }
-    }
 
-
-    public List<PrimingRequest> retrievePreparedPrimes() {
-        HttpGet get = new HttpGet(primePreparedUrl);
-        try {
-            CloseableHttpResponse httpResponse = httpClient.execute(get);
-            int statusCode = httpResponse.getStatusLine().getStatusCode();
-            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
-            if (statusCode != 200) {
-                LOGGER.info("Retrieving of primes failed with http status {} body {}", statusCode, responseAsString);
-                throw new PrimeFailedException();
-            }
-            LOGGER.debug("Received response from scassandra {}", responseAsString);
-            PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
-            return Arrays.asList(primes);
-        } catch (IOException e) {
-            LOGGER.info("retrieving failed", e);
+        if (response.getStatusLine().getStatusCode() != 200) {
+            LOGGER.warn("Priming came back with non-200 response code {}", response.getStatusLine());
             throw new PrimeFailedException();
         }
     }

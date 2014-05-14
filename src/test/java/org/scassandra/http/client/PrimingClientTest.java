@@ -16,6 +16,7 @@ import java.util.*;
 public class PrimingClientTest {
 
     private static final int PORT = 1234;
+
     public static final String PRIME_PREPARED_PATH = "/prime-prepared-single";
     public static final String PRIME_QUERY_PATH = "/prime-query-single";
 
@@ -28,7 +29,6 @@ public class PrimingClientTest {
     public void setup() {
         underTest = PrimingClient.builder().withHost("localhost").withPort(PORT).build();
     }
-
 
     @Test
     public void testPrimingQueryEmptyResults() {
@@ -198,6 +198,7 @@ public class PrimingClientTest {
         underTest.clearQueryPrimes();
         //then
     }
+
     @Test(expected = PrimeFailedException.class)
     public void testRetrievingOfQueryPrimesFailedDueToStatusCode() {
         //given
@@ -215,6 +216,7 @@ public class PrimingClientTest {
         underTest.clearQueryPrimes();
         //then
     }
+
     @Test(expected = PrimeFailedException.class)
     public void testRetrievingOfQueryPrimesFailed() {
         //given
@@ -340,6 +342,7 @@ public class PrimingClientTest {
         underTest.primePreparedStatement(PrimingRequest.preparedStatementBuilder().build());
         //then
     }
+
     @Test(expected = PrimeFailedException.class)
     public void testPrimingPreparedStatementFailureDueToHttpError() {
         //given
@@ -389,5 +392,33 @@ public class PrimingClientTest {
         //then
         assertEquals(1, primingRequests.size());
         assertEquals(pr, primingRequests.get(0));
+    }
+
+    @Test
+    public void testDeletingOfPreparedPrimes() {
+        //given
+        stubFor(delete(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withStatus(200)));
+        //when
+        underTest.clearPreparedPrimes();
+        //then
+        verify(deleteRequestedFor(urlEqualTo(PRIME_PREPARED_PATH)));
+    }
+
+    @Test(expected = PrimeFailedException.class)
+    public void testDeletingOfPreparedPrimesFailedDueToStatusCode() {
+        //given
+        stubFor(delete(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withStatus(300)));
+        //when
+        underTest.clearPreparedPrimes();
+        //then
+    }
+
+    @Test(expected = PrimeFailedException.class)
+    public void testDeletingOfPreparedPrimesFailed() {
+        //given
+        stubFor(delete(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE).withStatus(200)));
+        //when
+        underTest.clearPreparedPrimes();
+        //then
     }
 }
