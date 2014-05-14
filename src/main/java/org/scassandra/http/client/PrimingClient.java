@@ -105,11 +105,11 @@ public class PrimingClient {
         try {
             CloseableHttpResponse httpResponse = httpClient.execute(get);
             int statusCode = httpResponse.getStatusLine().getStatusCode();
+            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
             if (statusCode != 200) {
-                LOGGER.info("Retrieving of primes failed with http status {}", statusCode);
+                LOGGER.info("Retrieving of primes failed with http status {} body {}", statusCode, responseAsString);
                 throw new PrimeFailedException();
             }
-            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
             LOGGER.debug("Received response from scassandra {}", responseAsString);
             PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
             return Arrays.asList(primes);
@@ -126,11 +126,14 @@ public class PrimingClient {
         httpPost.setEntity(new StringEntity(primeAsJson, ContentType.APPLICATION_JSON));
         try {
             CloseableHttpResponse response = httpClient.execute(httpPost);
-            EntityUtils.consumeQuietly(response.getEntity());
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
+                String body = EntityUtils.toString(response.getEntity());
+                LOGGER.info("Prime failed with status code {} and body {}", statusCode, body);
                 throw new PrimeFailedException("Response code from server: " + statusCode);
 
+            } else {
+                EntityUtils.consumeQuietly(response.getEntity());
             }
         } catch (IOException e) {
             LOGGER.info("failed prepared prime {}", e);
@@ -144,11 +147,11 @@ public class PrimingClient {
         try {
             CloseableHttpResponse httpResponse = httpClient.execute(get);
             int statusCode = httpResponse.getStatusLine().getStatusCode();
+            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
             if (statusCode != 200) {
-                LOGGER.info("Retrieving of primes failed with http status {}", statusCode);
+                LOGGER.info("Retrieving of primes failed with http status {} body {}", statusCode, responseAsString);
                 throw new PrimeFailedException();
             }
-            String responseAsString = EntityUtils.toString(httpResponse.getEntity());
             LOGGER.debug("Received response from scassandra {}", responseAsString);
             PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
             return Arrays.asList(primes);
