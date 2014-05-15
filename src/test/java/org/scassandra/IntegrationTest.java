@@ -104,18 +104,31 @@ public class IntegrationTest {
     }
 
     @Test
-    public void testPreparedPrime() {
+    public void testPreparedPrimeAndRetrievalOfPrime() {
         //given
         Map<String, String> row = new HashMap<String, String>();
         row.put("name", "chris");
         PrimingRequest prime = PrimingRequest.queryBuilder()
                 .withQuery("select * from people where name = ?")
                 .withRows(row)
+                .withConsistency(PrimingRequest.Consistency.ALL)
                 .build();
 
         //when
         primingClient.primePreparedStatement(prime);
+        List<PrimingRequest> retrievedPrimes = primingClient.retrievePreparedPrimes();
         //then
+        PrimingRequest expectedPrimeWithDefaults = PrimingRequest.queryBuilder()
+                .withQuery("select * from people where name = ?")
+                .withRows(row)
+                .withColumnTypes(ImmutableMap.of("name", ColumnTypes.Varchar))
+                .withResult(PrimingRequest.Result.success)
+                .withConsistency(PrimingRequest.Consistency.ALL)
+                .withVariableTypes(ColumnTypes.Varchar)
+                .build();
+
+       PrimingRequest retrievedPrime = retrievedPrimes.get(0);
+        assertEquals(expectedPrimeWithDefaults, retrievedPrime);
     }
 
     @Test
