@@ -15,6 +15,9 @@ import java.util.List;
 
 public class ActivityClientTest {
     private static final int PORT = 1235;
+    private final String preparedStatementExecutionUrl = "/prepared-statement-execution";
+    private final String queryUrl = "/query";
+    private final String connectionUrl = "/connection";
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(PORT);
@@ -31,7 +34,7 @@ public class ActivityClientTest {
     @Test
     public void testRetrievalOfZeroQueries() {
         //given
-        stubFor(get(urlEqualTo("/query")).willReturn(aResponse().withBody("[]")));
+        stubFor(get(urlEqualTo(queryUrl)).willReturn(aResponse().withBody("[]")));
         //when
         List<Query> queries = underTest.retrieveQueries();
         //then
@@ -41,7 +44,7 @@ public class ActivityClientTest {
     @Test
     public void testRetrievalOfASingleQuery() {
         //given
-        stubFor(get(urlEqualTo("/query")).willReturn(aResponse().withBody("[{\"query\":\"select * from people\",\"consistency\":\"TWO\"}]")));
+        stubFor(get(urlEqualTo(queryUrl)).willReturn(aResponse().withBody("[{\"query\":\"select * from people\",\"consistency\":\"TWO\"}]")));
         //when
         List<Query> queries = underTest.retrieveQueries();
         //then
@@ -53,7 +56,7 @@ public class ActivityClientTest {
     @Test(expected = ActivityRequestFailed.class)
     public void testErrorDuringQueryRetrieval() {
         //given
-        stubFor(get(urlEqualTo("/query"))
+        stubFor(get(urlEqualTo(queryUrl))
                 .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.retrieveQueries();
@@ -64,7 +67,7 @@ public class ActivityClientTest {
     @Test
     public void testRetrievalOfZeroConnections() {
         //given
-        stubFor(get(urlEqualTo("/connection")).willReturn(aResponse().withBody("[]")));
+        stubFor(get(urlEqualTo(connectionUrl)).willReturn(aResponse().withBody("[]")));
         //when
         List<Connection> connections = underTest.retrieveConnections();
         //then
@@ -74,7 +77,7 @@ public class ActivityClientTest {
     @Test
     public void testRetrievalOfOnePlusConnections() {
         //given
-        stubFor(get(urlEqualTo("/connection")).willReturn(aResponse().withBody("[{\"result\":\"success\"}]")));
+        stubFor(get(urlEqualTo(connectionUrl)).willReturn(aResponse().withBody("[{\"result\":\"success\"}]")));
         //when
         List<Connection> connections = underTest.retrieveConnections();
         //then
@@ -85,7 +88,7 @@ public class ActivityClientTest {
     @Test(expected = ActivityRequestFailed.class)
     public void testErrorDuringConnectionRetrieval() {
         //given
-        stubFor(get(urlEqualTo("/connection"))
+        stubFor(get(urlEqualTo(connectionUrl))
                 .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.retrieveConnections();
@@ -95,7 +98,7 @@ public class ActivityClientTest {
     @Test(expected = ActivityRequestFailed.class, timeout = 2500)
     public void testServerHanging() {
         //given
-        stubFor(get(urlEqualTo("/connection"))
+        stubFor(get(urlEqualTo(connectionUrl))
                 .willReturn(aResponse().withFixedDelay(5000)));
         //when
         underTest.retrieveConnections();
@@ -108,13 +111,13 @@ public class ActivityClientTest {
         //when
         underTest.clearConnections();
         //then
-        verify(deleteRequestedFor(urlEqualTo("/connection")));
+        verify(deleteRequestedFor(urlEqualTo(connectionUrl)));
     }
 
     @Test(expected = ActivityRequestFailed.class)
     public void testDeletingOfConnectionHistoryFailing() {
         //given
-        stubFor(delete(urlEqualTo("/connection"))
+        stubFor(delete(urlEqualTo(connectionUrl))
                 .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.clearConnections();
@@ -128,13 +131,13 @@ public class ActivityClientTest {
         //when
         underTest.clearQueries();
         //then
-        verify(deleteRequestedFor(urlEqualTo("/query")));
+        verify(deleteRequestedFor(urlEqualTo(queryUrl)));
     }
 
     @Test(expected = ActivityRequestFailed.class)
     public void testDeletingOfQueryHistoryFailing() {
         //given
-        stubFor(delete(urlEqualTo("/query"))
+        stubFor(delete(urlEqualTo(queryUrl))
                 .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.clearQueries();
@@ -145,7 +148,7 @@ public class ActivityClientTest {
     @Test
     public void retrievingPreparedStatementExecutions() throws Exception {
         //given
-        stubFor(get(urlEqualTo("/prepared-statement-execution"))
+        stubFor(get(urlEqualTo(preparedStatementExecutionUrl))
                 .willReturn(aResponse().withStatus(200).withBody(
                 "[{\n" +
                         "  \"preparedStatementText\": \"select * from people where name = ?\",\n" +
@@ -166,7 +169,7 @@ public class ActivityClientTest {
     @Test(expected = ActivityRequestFailed.class)
     public void retrievingPreparedStatementExecutionsFailure() throws Exception {
         //given
-        stubFor(get(urlEqualTo("/prepared-statement-execution"))
+        stubFor(get(urlEqualTo(preparedStatementExecutionUrl))
                 .willReturn(aResponse().withStatus(200).withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.retrievePreparedStatementExecutions();
@@ -176,7 +179,7 @@ public class ActivityClientTest {
     @Test(expected = ActivityRequestFailed.class)
     public void retrievingPreparedStatementExecutionsNot200() throws Exception {
         //given
-        stubFor(get(urlEqualTo("/prepared-statement-execution"))
+        stubFor(get(urlEqualTo(preparedStatementExecutionUrl))
                 .willReturn(aResponse().withStatus(500)));
         //when
         underTest.retrievePreparedStatementExecutions();
@@ -186,21 +189,39 @@ public class ActivityClientTest {
     @Test
     public void testDeletingOfPreparedExecutionHistory() {
         //given
-        stubFor(delete(urlEqualTo("/prepared-statement-execution"))
+        stubFor(delete(urlEqualTo(preparedStatementExecutionUrl))
                 .willReturn(aResponse().withStatus(200)));
         //when
         underTest.clearPreparedStatementExecutions();
         //then
-        verify(deleteRequestedFor(urlEqualTo("/prepared-statement-execution")));
+        verify(deleteRequestedFor(urlEqualTo(preparedStatementExecutionUrl)));
     }
 
     @Test(expected = ActivityRequestFailed.class)
     public void testDeletingOfPreparedExecutionHistoryFailure() {
         //given
-        stubFor(delete(urlEqualTo("/prepared-statement-execution"))
+        stubFor(delete(urlEqualTo(preparedStatementExecutionUrl))
                 .willReturn(aResponse().withStatus(200).withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.clearPreparedStatementExecutions();
         //then
+    }
+
+    @Test
+    public void testClearAllActivityHistory() {
+        //given
+        stubFor(delete(urlEqualTo(preparedStatementExecutionUrl))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(queryUrl))
+                .willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(connectionUrl))
+                .willReturn(aResponse().withStatus(200)));
+
+        //when
+        underTest.clearAllRecordedActivity();
+        //then
+        verify(deleteRequestedFor(urlEqualTo(preparedStatementExecutionUrl)));
+        verify(deleteRequestedFor(urlEqualTo(queryUrl)));
+        verify(deleteRequestedFor(urlEqualTo(connectionUrl)));
     }
 }

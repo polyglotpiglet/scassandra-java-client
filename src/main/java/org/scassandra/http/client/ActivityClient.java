@@ -103,46 +103,44 @@ public class ActivityClient {
             LOGGER.debug("Parsed connections {}", Arrays.toString(queries));
             return Arrays.asList(queries);
         } catch (IOException e) {
-            LOGGER.info("Request for queries failed", e);
+            LOGGER.info("Request for connections failed", e);
             throw new ActivityRequestFailed();
         }
     }
+
+
 
     /**
      * Deletes all the recorded connections from the configured Scassandra server.
      */
     public void clearConnections() {
-        HttpDelete delete = new HttpDelete(connectionUrl);
-        try {
-            CloseableHttpResponse httpResponse = httpClient.execute(delete);
-            EntityUtils.consumeQuietly(httpResponse.getEntity());
-        } catch (IOException e) {
-           LOGGER.warn("clearing of connections failed",e);
-            throw new ActivityRequestFailed();
-        }
+        httpDelete(connectionUrl, "clearing of connections failed" );
     }
+
     /**
      * Deletes all the recorded queries from the configured Scassandra server.
      */
     public void clearQueries() {
-        HttpDelete delete = new HttpDelete(queryUrl);
-        try {
-            CloseableHttpResponse httpResponse = httpClient.execute(delete);
-            EntityUtils.consumeQuietly(httpResponse.getEntity());
-        } catch (IOException e) {
-            LOGGER.warn("clearing of connections failed",e);
-            throw new ActivityRequestFailed();
-        }
+        httpDelete(queryUrl, "clearing of queries failed" );
     }
 
-
     public void clearPreparedStatementExecutions() {
-        HttpDelete delete = new HttpDelete(preparedStatementExecutionUrl);
+        httpDelete(preparedStatementExecutionUrl, "clearing of prepared statement executions failed");
+    }
+
+    public void clearAllRecordedActivity(){
+        clearConnections();
+        clearQueries();
+        clearPreparedStatementExecutions();
+    }
+
+    private void httpDelete(String url, String warningMessage) {
+        HttpDelete delete = new HttpDelete(url);
         try {
             CloseableHttpResponse httpResponse = httpClient.execute(delete);
             EntityUtils.consumeQuietly(httpResponse.getEntity());
         } catch (IOException e) {
-            LOGGER.warn("clearing of connections failed",e);
+            LOGGER.warn(warningMessage, e);
             throw new ActivityRequestFailed();
         }
     }

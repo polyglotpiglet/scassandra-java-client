@@ -71,6 +71,11 @@ public class PrimingClient {
         return httpGetPrimingRequests(primeQueryUrl);
     }
 
+    public void clearAllPrimes(){
+        clearQueryPrimes();
+        clearPreparedPrimes();
+    }
+
     public void clearQueryPrimes() {
         httpDelete(primeQueryUrl);
     }

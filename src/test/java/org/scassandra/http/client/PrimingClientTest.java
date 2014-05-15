@@ -421,4 +421,16 @@ public class PrimingClientTest {
         underTest.clearPreparedPrimes();
         //then
     }
+
+    @Test
+    public void testClearAllPrimes() {
+        //given
+        stubFor(delete(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withStatus(200)));
+        stubFor(delete(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        //when
+        underTest.clearAllPrimes();
+        //then
+        verify(deleteRequestedFor(urlEqualTo(PRIME_PREPARED_PATH)));
+        verify(deleteRequestedFor(urlEqualTo(PRIME_QUERY_PATH)));
+    }
 }
