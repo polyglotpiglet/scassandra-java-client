@@ -26,7 +26,7 @@ public class ActivityClient {
     public static class ActivityClientBuilder {
 
         private String host = "localhost";
-        private int adminPort = 8043;
+        private int port = 8043;
 
         private ActivityClientBuilder() {}
 
@@ -35,13 +35,13 @@ public class ActivityClient {
             return this;
         }
 
-        public ActivityClientBuilder withPort(int adminPort){
-            this.adminPort = adminPort;
+        public ActivityClientBuilder withPort(int port){
+            this.port = port;
             return this;
         }
 
         public ActivityClient build(){
-            return new ActivityClient(this.host, this.adminPort);
+            return new ActivityClient(this.host, this.port);
         }
     }
 
@@ -55,7 +55,7 @@ public class ActivityClient {
     private final String queryUrl;
     private final String preparedStatementExecutionUrl;
 
-    private ActivityClient(String host, int adminPort) {
+    private ActivityClient(String host, int port) {
         RequestConfig.Builder requestBuilder = RequestConfig.custom();
         requestBuilder = requestBuilder.setConnectTimeout(500);
         requestBuilder = requestBuilder.setConnectionRequestTimeout(500);
@@ -63,9 +63,9 @@ public class ActivityClient {
         HttpClientBuilder builder = HttpClientBuilder.create();
         builder.setDefaultRequestConfig(requestBuilder.build());
         httpClient = builder.build();
-        this.connectionUrl = "http://" + host + ":" + adminPort + "/connection";
-        this.queryUrl = "http://" + host + ":" + adminPort + "/query";
-        this.preparedStatementExecutionUrl = "http://" + host + ":" + adminPort + "/prepared-statement-execution";
+        this.connectionUrl = "http://" + host + ":" + port + "/connection";
+        this.queryUrl = "http://" + host + ":" + port + "/query";
+        this.preparedStatementExecutionUrl = "http://" + host + ":" + port + "/prepared-statement-execution";
     }
 
     /**
