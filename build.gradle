@@ -56,6 +56,7 @@ dependencies {
   testCompile 'junit:junit:4.11'
   testCompile 'org.powermock:powermock-mockito-release-full:1.5'
   testCompile 'com.github.tomakehurst:wiremock:1.46'
+  testCompile 'nl.jqno.equalsverifier:equalsverifier:1.0.2'
 }
 
 task wrapper(type: Wrapper) {
