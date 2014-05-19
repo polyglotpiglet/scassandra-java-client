@@ -1,0 +1,13 @@
+package org.scassandra.http.client;
+
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
+
+public class QueryTest {
+
+    @Test
+    public void testEqualsContract() {
+        EqualsVerifier.forClass(Query.class).verify();
+    }
+
+}

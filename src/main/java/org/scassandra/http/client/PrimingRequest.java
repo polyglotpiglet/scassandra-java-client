@@ -2,7 +2,7 @@ package org.scassandra.http.client;
 
 import java.util.*;
 
-public class PrimingRequest {
+public final class PrimingRequest {
 
     public static class PrimingRequestBuilder {
 
@@ -25,7 +25,8 @@ public class PrimingRequest {
             return this;
         }
 
-        public PrimingRequestBuilder withRows(Map<String, ? extends Object>... rows) {
+        @SafeVarargs
+        public final PrimingRequestBuilder withRows(Map<String, ? extends Object>... rows) {
             this.rows = Arrays.asList(rows);
             return this;
         }
@@ -70,8 +71,8 @@ public class PrimingRequest {
         return new PrimingRequestBuilder();
     }
 
-    private When when;
-    private Then then;
+    private final When when;
+    private final Then then;
 
     private PrimingRequest(String query, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> columnTypes, ColumnTypes[] variableTypes) {
         this.when = new When(query, consistency);

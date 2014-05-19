@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -433,4 +432,5 @@ public class PrimingClientTest {
         verify(deleteRequestedFor(urlEqualTo(PRIME_PREPARED_PATH)));
         verify(deleteRequestedFor(urlEqualTo(PRIME_QUERY_PATH)));
     }
+
 }
