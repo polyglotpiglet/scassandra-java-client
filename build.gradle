@@ -21,32 +21,39 @@ task sourceJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allJava
 }
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
 
 artifacts {
-    archives javadocJar, sourcesJar
+    archives jar
+    archives javadocJar
+    archives sourceJar
 }
 
 signing {
     sign configurations.archives
 }
 
-ploadArchives {
+uploadArchives {
   repositories {
     mavenDeployer {
       beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-      repository(url: " url "../scassandra-repo/releases"") {
+      repository(url: "file:../scassandra-repo/releases") {
         //authentication(userName: ossrhUsername, password: ossrhPassword)
       }
 
-      snapshotRepository(url "../scassandra-repo/snapshots"") {
+      snapshotRepository(url: "file:../scassandra-repo/snapshots") {
         //authentication(userName: ossrhUsername, password: ossrhPassword)
       }
+      pom.artifactId = 'java-client'
 
       pom.project {
         name 'Scassandra Java Client'
         packaging 'jar'
-        // optionally artifactId can be defined here 
+        // optionally artifactId can be defined here
         description 'Allows Java applications to use Scassandra'
         url 'https://github.com/chbatey/scassandra-java-client'
 

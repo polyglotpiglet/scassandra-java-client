@@ -6,3 +6,4 @@ out
 gradle
 build
 buildAndCopy.sh
+target
