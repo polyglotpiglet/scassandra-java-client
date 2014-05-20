@@ -38,63 +38,68 @@ signing {
 }
 
 uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-      repository(url: "file:../scassandra-repo/releases") {
-        //authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword )
+            }
 
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-        authentication(userName: ossrhUsername, password: ossrhPassword)
-      }
-      pom.artifactId = 'java-client'
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            pom.artifactId = 'java-client'
 
-      pom.project {
-        name 'Scassandra Java Client'
-        packaging 'jar'
-        // optionally artifactId can be defined here
-        description 'Allows Java applications to use Scassandra'
-        url 'https://github.com/chbatey/scassandra-java-client'
+            pom.project {
+                name 'Scassandra Java Client'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'Allows Java applications to use Scassandra'
+                url 'https://github.com/chbatey/scassandra-java-client'
 
-        scm {
-          connection 'scm:git:git@github.com:chbatey/scassandra-java-client.git'
-          developerConnection 'scm:git:git@github.com:chbatey/scassandra-java-client.git'
-          url 'https://github.com/chbatey/scassandra-java-client'
+                scm {
+                    connection 'scm:git:git@github.com:chbatey/scassandra-java-client.git'
+                    developerConnection 'scm:git:git@github.com:chbatey/scassandra-java-client.git'
+                    url 'https://github.com/chbatey/scassandra-java-client'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'chbatey'
+                        name 'Christopher Batey'
+                        email 'christopher.batey@gmail.com'
+                    }
+                    developer {
+                        id 'apojha'
+                        name 'Alexandra Ojha'
+                        email 'alexojha@gmail.com'
+                    }
+                }
+            }
         }
-
-        licenses {
-          license {
-            name 'The Apache Software License, Version 2.0'
-            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-          }
-        }
-
-        developers {
-          developer {
-            id 'chbatey'
-            name 'Christopher Batey'
-            email 'christopher.batey@gmail.com'
-          }
-        }
-      }
     }
-  }
 }
 
 
 
 dependencies {
-  compile('org.scassandra:scassandra-server_2.10:0.1-SNAPSHOT')
-  compile 'org.apache.httpcomponents:httpclient:4+'
-  compile 'com.google.code.gson:gson:2+'
-  compile 'org.slf4j:slf4j-api:1.7.6'
-  testCompile 'ch.qos.logback:logback-classic:1.1.1'
-  testCompile 'org.mockito:mockito-all:1.9.5'
-  testCompile 'junit:junit:4.11'
-  testCompile 'org.powermock:powermock-mockito-release-full:1.5'
-  testCompile 'com.github.tomakehurst:wiremock:1.46'
+    compile('org.scassandra:scassandra-server_2.10:0.1-SNAPSHOT')
+    compile 'org.apache.httpcomponents:httpclient:4+'
+    compile 'com.google.code.gson:gson:2+'
+    compile 'org.slf4j:slf4j-api:1.7.6'
+    testCompile 'ch.qos.logback:logback-classic:1.1.1'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.powermock:powermock-mockito-release-full:1.5'
+    testCompile 'com.github.tomakehurst:wiremock:1.46'
 }
 
 task wrapper(type: Wrapper) {
