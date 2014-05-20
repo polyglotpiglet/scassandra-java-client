@@ -19,6 +19,7 @@ import java.util.List;
 /**
  * Responsible for retrieving and clearing interactions with the Scassandra server. Including
  * - Queries
+ * - Prepared statements
  * - Connections
  */
 public class ActivityClient {

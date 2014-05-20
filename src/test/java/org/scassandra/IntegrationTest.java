@@ -112,7 +112,7 @@ public class IntegrationTest {
         primingClient.primePreparedStatement(prime);
         List<PrimingRequest> retrievedPrimes = primingClient.retrievePreparedPrimes();
         //then
-        PrimingRequest expectedPrimeWithDefaults = PrimingRequest.queryBuilder()
+        PrimingRequest expectedPrimeWithDefaults = PrimingRequest.preparedStatementBuilder()
                 .withQuery("select * from people where name = ?")
                 .withRows(row)
                 .withColumnTypes(ImmutableMap.of("name", ColumnTypes.Varchar))

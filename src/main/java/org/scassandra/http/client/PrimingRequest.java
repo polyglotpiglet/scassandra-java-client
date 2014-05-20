@@ -6,7 +6,15 @@ public class PrimingRequest {
 
     public static class PrimingRequestBuilder {
 
-        private PrimingRequestBuilder() {}
+        private PrimeType type;
+
+        private static enum PrimeType {
+            QUERY, PREPARED
+        }
+
+        private PrimingRequestBuilder(PrimeType type) {
+            this.type = type;
+        }
 
         private Consistency[] consistency;
         private ColumnTypes[] variableTypes;
@@ -36,6 +44,11 @@ public class PrimingRequest {
         }
 
         public PrimingRequest build() {
+
+            if (PrimeType.QUERY.equals(this.type) && this.variableTypes != null) {
+                throw new IllegalStateException("Variable types only applicable for a prepared statement prime. Not a query prime.");
+            }
+
             List<Consistency> consistencies = this.consistency == null ? null : Arrays.asList(this.consistency);
 
             List<Map<String, ? extends Object>> rowsDefaultedToEmptyForSuccess = this.rows;
@@ -63,11 +76,11 @@ public class PrimingRequest {
     }
 
     public static PrimingRequestBuilder queryBuilder() {
-        return new PrimingRequestBuilder();
+        return new PrimingRequestBuilder(PrimingRequestBuilder.PrimeType.QUERY);
     }
 
     public static PrimingRequestBuilder preparedStatementBuilder() {
-        return new PrimingRequestBuilder();
+        return new PrimingRequestBuilder(PrimingRequestBuilder.PrimeType.PREPARED);
     }
 
     private When when;
