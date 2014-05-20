@@ -1,13 +1,30 @@
 package org.scassandra;
 
+import org.scassandra.http.client.ActivityClient;
+import org.scassandra.http.client.PrimingClient;
 import uk.co.scassandra.ServerStubRunner;
 
 class ScassandraRunner implements Scassandra {
 
     private final ServerStubRunner serverStubRunner;
+    private final PrimingClient primingClient;
+    private final ActivityClient activityClient;
 
-    public ScassandraRunner(int binaryPort, int adminPort) {
+    ScassandraRunner(int binaryPort, int adminPort) {
         serverStubRunner = new ServerStubRunner(binaryPort, adminPort);
+        primingClient = PrimingClient.builder().withPort(adminPort).build();
+        activityClient = ActivityClient.builder().withPort(adminPort).build();
+
+    }
+
+    @Override
+    public PrimingClient primingClient() {
+        return this.primingClient;
+    }
+
+    @Override
+    public ActivityClient activityClient() {
+        return this.activityClient;
     }
 
     @Override

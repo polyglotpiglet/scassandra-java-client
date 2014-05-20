@@ -22,14 +22,8 @@ public class IntegrationTest {
     @BeforeClass
     public static void startScassandra() {
         SERVER.start();
-
-        activityClient = ActivityClient.builder()
-                .withHost("localhost")
-                .withPort(adminPort).build();
-
-        primingClient = PrimingClient.builder()
-                .withHost("localhost")
-                .withPort(adminPort).build();
+        activityClient = SERVER.activityClient();
+        primingClient = SERVER.primingClient();
     }
 
     @AfterClass
