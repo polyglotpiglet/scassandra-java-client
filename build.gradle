@@ -13,7 +13,7 @@ compileJava {
 repositories {
     mavenCentral()
     maven {
-        url "https://raw.githubusercontent.com/scassandra/scassandra-repo/master/snapshots"
+        url "https://oss.sonatype.org/content/repositories/snapshots"
     }
 }
 
@@ -45,8 +45,8 @@ uploadArchives {
         //authentication(userName: ossrhUsername, password: ossrhPassword)
       }
 
-      snapshotRepository(url: "file:../scassandra-repo/snapshots") {
-        //authentication(userName: ossrhUsername, password: ossrhPassword)
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
       }
       pom.artifactId = 'java-client'
 
@@ -85,7 +85,7 @@ uploadArchives {
 
 
 dependencies {
-  compile('scassandra-server:scassandra-server_2.10:0.1-SNAPSHOT')
+  compile('org.scassandra:scassandra-server_2.10:0.1-SNAPSHOT')
   compile 'org.apache.httpcomponents:httpclient:4+'
   compile 'com.google.code.gson:gson:2+'
   compile 'org.slf4j:slf4j-api:1.7.6'
