@@ -9,11 +9,15 @@ class ScassandraRunner implements Scassandra {
     private final ServerStubRunner serverStubRunner;
     private final PrimingClient primingClient;
     private final ActivityClient activityClient;
+    private final int binaryPort;
+    private final int adminPort;
 
     ScassandraRunner(int binaryPort, int adminPort) {
-        serverStubRunner = new ServerStubRunner(binaryPort, adminPort);
-        primingClient = PrimingClient.builder().withPort(adminPort).build();
-        activityClient = ActivityClient.builder().withPort(adminPort).build();
+        this.binaryPort = binaryPort;
+        this.adminPort = adminPort;
+        this.serverStubRunner = new ServerStubRunner(binaryPort, adminPort);
+        this.primingClient = PrimingClient.builder().withPort(adminPort).build();
+        this.activityClient = ActivityClient.builder().withPort(adminPort).build();
 
     }
 
@@ -42,6 +46,16 @@ class ScassandraRunner implements Scassandra {
     @Override
     public void stop() {
         serverStubRunner.shutdown();
+    }
+
+    @Override
+    public int getAdminPort() {
+        return adminPort;
+    }
+
+    @Override
+    public int getBinaryPort() {
+        return binaryPort;
     }
 
 }

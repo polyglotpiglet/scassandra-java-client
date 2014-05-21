@@ -337,7 +337,7 @@ public class PrimingClientTest {
     public void testPrimingPreparedStatementFailureDueToStatusCode() {
         //given
         stubFor(post(urlEqualTo(PRIME_PREPARED_PATH))
-                .willReturn(aResponse().withStatus(500)));
+                .willReturn(aResponse().withBody("oh dear").withStatus(500)));
         //when
         underTest.primePreparedStatement(PrimingRequest.preparedStatementBuilder().build());
         //then
