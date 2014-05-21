@@ -17,7 +17,6 @@ package org.scassandra;
 
 import org.scassandra.http.client.ActivityClient;
 import org.scassandra.http.client.PrimingClient;
-import uk.co.scassandra.ServerStubRunner;
 
 class ScassandraRunner implements Scassandra {
 
