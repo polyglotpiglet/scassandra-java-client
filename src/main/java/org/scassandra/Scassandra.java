@@ -31,4 +31,17 @@ public interface Scassandra {
      * Stops Scassandra.
      */
     void stop();
+
+    /**
+     * The port that Scassandars REST API is listening on.
+     * This is the port that Priming / Activity verification happens on.
+     * @return
+     */
+    int getAdminPort();
+
+    /**
+     * The port Scassandra is listening on for connections from Cassandra.
+     * @return
+     */
+    int getBinaryPort();
 }

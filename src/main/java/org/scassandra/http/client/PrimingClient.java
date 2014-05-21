@@ -133,6 +133,12 @@ public class PrimingClient {
         CloseableHttpResponse response = null;
         try {
             response = httpClient.execute(httpPost);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                String body = EntityUtils.toString(response.getEntity());
+                String errorMessage = String.format("Priming came back with non-200 response code %s and body %s", response.getStatusLine(), body);
+                LOGGER.warn(errorMessage);
+                throw new PrimeFailedException(errorMessage);
+            }
         } catch (IOException e) {
             LOGGER.warn("Priming failed", e);
             throw new PrimeFailedException();
@@ -140,11 +146,6 @@ public class PrimingClient {
             if (response != null) {
                 EntityUtils.consumeQuietly(response.getEntity());
             }
-        }
-
-        if (response.getStatusLine().getStatusCode() != 200) {
-            LOGGER.warn("Priming came back with non-200 response code {}", response.getStatusLine());
-            throw new PrimeFailedException();
         }
     }
 
