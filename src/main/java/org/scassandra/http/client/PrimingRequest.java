@@ -64,6 +64,10 @@ public class PrimingRequest {
                 throw new IllegalStateException("Variable types only applicable for a prepared statement prime. Not a query prime.");
             }
 
+            if (query == null) {
+                throw new IllegalStateException("Must set query for PrimingRequest.");
+            }
+
             List<Consistency> consistencies = this.consistency == null ? null : Arrays.asList(this.consistency);
 
             List<Map<String, ? extends Object>> rowsDefaultedToEmptyForSuccess = this.rows;

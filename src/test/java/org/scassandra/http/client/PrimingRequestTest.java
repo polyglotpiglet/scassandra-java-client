@@ -35,4 +35,18 @@ public class PrimingRequestTest {
             assertEquals(e.getMessage(), "Variable types only applicable for a prepared statement prime. Not a query prime.");
         }
     }
+
+    @Test
+    public void throwsIllegalStateExceptionIfNoQuerySpecified() {
+        //given
+        //when
+        try {
+            PrimingRequest.queryBuilder()
+                    .build();
+            fail("Expected illegal state exception");
+        } catch (IllegalStateException e) {
+            //then
+            assertEquals(e.getMessage(), "Must set query for PrimingRequest.");
+        }
+    }
 }
