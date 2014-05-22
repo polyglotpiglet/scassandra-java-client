@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2014 Christopher Batey
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.scassandra;
 
 import com.google.common.collect.ImmutableMap;
@@ -22,14 +37,8 @@ public class IntegrationTest {
     @BeforeClass
     public static void startScassandra() {
         SERVER.start();
-
-        activityClient = ActivityClient.builder()
-                .withHost("localhost")
-                .withPort(adminPort).build();
-
-        primingClient = PrimingClient.builder()
-                .withHost("localhost")
-                .withPort(adminPort).build();
+        activityClient = SERVER.activityClient();
+        primingClient = SERVER.primingClient();
     }
 
     @AfterClass
@@ -118,7 +127,7 @@ public class IntegrationTest {
         primingClient.primePreparedStatement(prime);
         List<PrimingRequest> retrievedPrimes = primingClient.retrievePreparedPrimes();
         //then
-        PrimingRequest expectedPrimeWithDefaults = PrimingRequest.queryBuilder()
+        PrimingRequest expectedPrimeWithDefaults = PrimingRequest.preparedStatementBuilder()
                 .withQuery("select * from people where name = ?")
                 .withRows(row)
                 .withColumnTypes(ImmutableMap.of("name", ColumnTypes.Varchar))

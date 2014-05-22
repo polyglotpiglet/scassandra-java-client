@@ -1,6 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'idea'
-apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply plugin: 'maven'
+
+group 'org.scassandra'
+jar.baseName = 'java-client'
 
 compileJava {
     sourceCompatibility = "1.6"
@@ -11,52 +15,93 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven {
-        url "https://raw.githubusercontent.com/scassandra/scassandra-repo/master/snapshots"
+        url "https://oss.sonatype.org/content/repositories/snapshots"
     }
 }
 
 task sourceJar(type: Jar) {
+    classifier = 'sources'
     from sourceSets.main.allJava
 }
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
 
-group 'org.scassandra'
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourceJar
+}
 
-version '0.0-SNAPSHOT'
+signing {
+    sign configurations.archives
+}
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId 'java-client'
-            from components.java
-        }
-        mavenJava(MavenPublication) {
-            artifactId 'java-client'
-            from components.java
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-            artifact sourceJar {
-                classifier "sources"
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword )
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+            pom.artifactId = 'java-client'
+
+            pom.project {
+                name 'Scassandra Java Client'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'Allows Java applications to use Scassandra'
+                url 'https://github.com/chbatey/scassandra-java-client'
+
+                scm {
+                    connection 'scm:git:git@github.com:chbatey/scassandra-java-client.git'
+                    developerConnection 'scm:git:git@github.com:chbatey/scassandra-java-client.git'
+                    url 'https://github.com/chbatey/scassandra-java-client'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'chbatey'
+                        name 'Christopher Batey'
+                        email 'christopher.batey@gmail.com'
+                    }
+                    developer {
+                        id 'apojha'
+                        name 'Alexandra Ojha'
+                        email 'alexojha@gmail.com'
+                    }
+                }
             }
         }
     }
-    repositories {
-        maven {
-            url "../scassandra-repo/snapshots" // change to point to your repo, e.g. http://my.org/repo
-        }
-    }
 }
 
 
+
 dependencies {
-  compile('scassandra-server:scassandra-server_2.10:0.1-SNAPSHOT')
-  compile 'org.apache.httpcomponents:httpclient:4+'
-  compile 'com.google.code.gson:gson:2+'
-  compile 'org.slf4j:slf4j-api:1.7.6'
-  testCompile 'ch.qos.logback:logback-classic:1.1.1'
-  testCompile 'org.mockito:mockito-all:1.9.5'
-  testCompile 'junit:junit:4.11'
-  testCompile 'org.powermock:powermock-mockito-release-full:1.5'
-  testCompile 'com.github.tomakehurst:wiremock:1.46'
-  testCompile 'nl.jqno.equalsverifier:equalsverifier:1.4.1'
+    compile('org.scassandra:scassandra-server_2.10:0.1-SNAPSHOT')
+    compile 'org.apache.httpcomponents:httpclient:4.3.2'
+    compile 'com.google.code.gson:gson:2.2.4'
+    compile 'org.slf4j:slf4j-api:1.7.6'
+    testCompile 'ch.qos.logback:logback-classic:1.1.1'
+    testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.powermock:powermock-mockito-release-full:1.5'
+    testCompile 'com.github.tomakehurst:wiremock:1.46'
+    testCompile 'nl.jqno.equalsverifier:equalsverifier:1.4.1'
 }
 
 task wrapper(type: Wrapper) {
