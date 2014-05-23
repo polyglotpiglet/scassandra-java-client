@@ -111,6 +111,14 @@ public final class PrimingRequest {
         this.then = new Then(rows, result, columnTypes, variableTypes);
     }
 
+    public When getWhen() {
+        return when;
+    }
+
+    public Then getThen() {
+        return then;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -139,7 +147,7 @@ public final class PrimingRequest {
                 '}';
     }
 
-    private static class Then {
+    public static class Then {
         private final ColumnTypes[] variable_types;
         private List<Map<String, ? extends Object>> rows;
         private Result result;
@@ -187,10 +195,24 @@ public final class PrimingRequest {
                     '}';
         }
 
+        public ColumnTypes[] getVariableTypes() {
+            return variable_types;
+        }
 
+        public List<Map<String, ? extends Object>> getRows() {
+            return Collections.unmodifiableList(rows);
+        }
+
+        public Result getResult() {
+            return result;
+        }
+
+        public Map<String, ColumnTypes> getColumnTypes() {
+            return Collections.unmodifiableMap(column_types);
+        }
     }
 
-    private static class When {
+    public static class When {
         private String query;
         private List<Consistency> consistency;
 
@@ -225,6 +247,14 @@ public final class PrimingRequest {
             int result = query != null ? query.hashCode() : 0;
             result = 31 * result + (consistency != null ? consistency.hashCode() : 0);
             return result;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public List<Consistency> getConsistency() {
+            return Collections.unmodifiableList(consistency);
         }
     }
 
