@@ -15,7 +15,7 @@
  */
 package org.scassandra.http.client;
 
-public class Query {
+public final class Query {
     
     public static class QueryBuilder {
 
@@ -49,8 +49,8 @@ public class Query {
 
     public static QueryBuilder builder() { return new QueryBuilder(); }
 
-    private String query;
-    private String consistency;
+    private final String query;
+    private final String consistency;
 
     private Query(String query, String consistency) {
         this.query = query;

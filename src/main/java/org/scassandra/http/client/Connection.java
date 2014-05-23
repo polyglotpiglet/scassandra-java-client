@@ -15,7 +15,7 @@
  */
 package org.scassandra.http.client;
 
-public class Connection {
+public final class Connection {
 
     public static class ConnectionBuilder {
 
@@ -36,7 +36,7 @@ public class Connection {
 
     public static ConnectionBuilder builder() { return new ConnectionBuilder(); }
 
-    private String result;
+    private final String result;
 
     private Connection(String result) {
         this.result = result;

@@ -16,6 +16,7 @@
 package org.scassandra.http.client;
 
 import org.junit.Test;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -48,5 +49,10 @@ public class PrimingRequestTest {
             //then
             assertEquals(e.getMessage(), "Must set query for PrimingRequest.");
         }
+    }
+
+    @Test
+    public void testEqualsContract() {
+        EqualsVerifier.forClass(PrimingRequest.class).verify();
     }
 }
