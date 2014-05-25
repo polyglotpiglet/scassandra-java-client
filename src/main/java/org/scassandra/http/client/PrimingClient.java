@@ -34,6 +34,9 @@ import java.util.List;
 
 public class PrimingClient {
 
+    public static final String DELETING_OF_PRIMES_FAILED = "Deleting of primes failed";
+    public static final String PRIMING_FAILED = "Priming failed";
+
     public static class PrimingClientBuilder {
 
         private String host = "localhost";
@@ -106,15 +109,16 @@ public class PrimingClient {
             int statusCode = httpResponse.getStatusLine().getStatusCode();
             String responseAsString = EntityUtils.toString(httpResponse.getEntity());
             if (statusCode != 200) {
-                LOGGER.info("Retrieving of primes failed with http status {} body {}", statusCode, responseAsString);
-                throw new PrimeFailedException();
+                String errorMessage = String.format("Retrieving of primes failed with http status %s body %s", statusCode, responseAsString);
+                LOGGER.info(errorMessage);
+                throw new PrimeFailedException(errorMessage);
             }
             LOGGER.debug("Received response from scassandra {}", responseAsString);
             PrimingRequest[] primes = (PrimingRequest[]) gson.fromJson(responseAsString, (Class) PrimingRequest[].class);
             return Arrays.asList(primes);
         } catch (IOException e) {
-            LOGGER.info("retrieving failed", e);
-            throw new PrimeFailedException();
+            LOGGER.info("Retrieving failed", e);
+            throw new PrimeFailedException("Retrieving of primes failed.", e);
         }
     }
 
@@ -127,12 +131,13 @@ public class PrimingClient {
             EntityUtils.consumeQuietly(httpResponse.getEntity());
             int statusCode = httpResponse.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                LOGGER.info("Clearing of primes failed with http status {}", statusCode);
-                throw new PrimeFailedException();
+                String errorMessage = String.format("Clearing of primes failed with http status %s", statusCode);
+                LOGGER.info(errorMessage);
+                throw new PrimeFailedException(errorMessage);
             }
         } catch (IOException e) {
-            LOGGER.info("priming failed", e);
-            throw new PrimeFailedException();
+            LOGGER.info(DELETING_OF_PRIMES_FAILED, e);
+            throw new PrimeFailedException(DELETING_OF_PRIMES_FAILED, e);
         } finally {
             if (httpResponse != null) {
                 EntityUtils.consumeQuietly(httpResponse.getEntity());
@@ -150,13 +155,13 @@ public class PrimingClient {
             response = httpClient.execute(httpPost);
             if (response.getStatusLine().getStatusCode() != 200) {
                 String body = EntityUtils.toString(response.getEntity());
-                String errorMessage = String.format("Priming came back with non-200 response code %s and body %s", response.getStatusLine(), body);
+                String errorMessage = String.format("Priming came back with non-200 response code: %s and body: %s", response.getStatusLine(), body);
                 LOGGER.warn(errorMessage);
                 throw new PrimeFailedException(errorMessage);
             }
         } catch (IOException e) {
-            LOGGER.warn("Priming failed", e);
-            throw new PrimeFailedException();
+            LOGGER.warn(PRIMING_FAILED, e);
+            throw new PrimeFailedException(PRIMING_FAILED, e);
         } finally {
             if (response != null) {
                 EntityUtils.consumeQuietly(response.getEntity());

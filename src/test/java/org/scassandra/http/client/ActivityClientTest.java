@@ -41,7 +41,6 @@ public class ActivityClientTest {
 
     @Before
     public void setup() {
-
         ActivityClientBuilder builder = ActivityClient.builder();
         underTest = builder.withHost("localhost").withPort(PORT).build();
     }

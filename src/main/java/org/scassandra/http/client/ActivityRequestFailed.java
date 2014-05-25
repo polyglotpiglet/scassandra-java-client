@@ -16,4 +16,11 @@
 package org.scassandra.http.client;
 
 public class ActivityRequestFailed extends RuntimeException {
+    ActivityRequestFailed(String message) {
+        super(message);
+    }
+
+    ActivityRequestFailed(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

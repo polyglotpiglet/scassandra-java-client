@@ -39,6 +39,10 @@ import java.util.List;
  */
 public class ActivityClient {
 
+    public static final String REQUEST_FOR_QUERIES_FAILED = "Request for queries failed";
+    public static final String REQUEST_FOR_CONNECTIONS_FAILED = "Request for connections failed";
+    public static final String REQUEST_FAILED = "Request failed";
+
     public static class ActivityClientBuilder {
 
         private String host = "localhost";
@@ -99,8 +103,8 @@ public class ActivityClient {
             LOGGER.debug("Parsed queries {}", Arrays.toString(queries));
             return Arrays.asList(queries);
         } catch (IOException e) {
-            LOGGER.info("Request for queries failed", e);
-            throw new ActivityRequestFailed();
+            LOGGER.info(REQUEST_FOR_QUERIES_FAILED, e);
+            throw new ActivityRequestFailed(REQUEST_FOR_QUERIES_FAILED, e);
         }
     }
     /**
@@ -119,35 +123,67 @@ public class ActivityClient {
             LOGGER.debug("Parsed connections {}", Arrays.toString(queries));
             return Arrays.asList(queries);
         } catch (IOException e) {
-            LOGGER.info("Request for connections failed", e);
-            throw new ActivityRequestFailed();
+            LOGGER.info(REQUEST_FOR_CONNECTIONS_FAILED, e);
+            throw new ActivityRequestFailed(REQUEST_FOR_CONNECTIONS_FAILED, e);
         }
     }
-
-
 
     /**
      * Deletes all the recorded connections from the configured Scassandra server.
      */
     public void clearConnections() {
-        httpDelete(connectionUrl, "clearing of connections failed" );
+        httpDelete(connectionUrl, "Clearing of connections failed" );
     }
 
     /**
      * Deletes all the recorded queries from the configured Scassandra server.
      */
     public void clearQueries() {
-        httpDelete(queryUrl, "clearing of queries failed" );
+        httpDelete(queryUrl, "Clearing of queries failed" );
     }
 
+    /**
+     * Deletes all the recorded prepared statement executions from the configured Scassandra server.
+     */
     public void clearPreparedStatementExecutions() {
-        httpDelete(preparedStatementExecutionUrl, "clearing of prepared statement executions failed");
+        httpDelete(preparedStatementExecutionUrl, "Clearing of prepared statement executions failed");
     }
 
+    /**
+     * Deletes the recorded prepared statement executions, recorded queries and recorded connections.
+     */
     public void clearAllRecordedActivity(){
         clearConnections();
         clearQueries();
         clearPreparedStatementExecutions();
+    }
+
+    /**
+     * Retrieves the recorded prepared statement executions. Note this the executions, not the prepare
+     * calls your applications makes.
+     *
+     * If you haven't primed the prepared statement then the variable types will be empty.
+     * @return PreparedStatementExecution
+     */
+    public List<PreparedStatementExecution> retrievePreparedStatementExecutions() {
+        HttpGet get = new HttpGet(preparedStatementExecutionUrl);
+        try {
+            CloseableHttpResponse response = httpClient.execute(get);
+            String body = EntityUtils.toString(response.getEntity());
+            LOGGER.debug("Received response {}", body);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                String errorMessage = String.format("Non 200 status code when retrieving prepared statement executions %s", statusCode);
+                LOGGER.info(errorMessage);
+                throw new ActivityRequestFailed(errorMessage);
+            }
+            PreparedStatementExecution[] executions = (PreparedStatementExecution[]) gson.fromJson(body, (Class) PreparedStatementExecution[].class);
+            LOGGER.debug("Parsed prepared statement executions {}", Arrays.toString(executions));
+            return Arrays.asList(executions);
+        } catch (IOException e) {
+            LOGGER.info(REQUEST_FAILED, e);
+            throw new ActivityRequestFailed(REQUEST_FAILED, e);
+        }
     }
 
     private void httpDelete(String url, String warningMessage) {
@@ -157,28 +193,9 @@ public class ActivityClient {
             EntityUtils.consumeQuietly(httpResponse.getEntity());
         } catch (IOException e) {
             LOGGER.warn(warningMessage, e);
-            throw new ActivityRequestFailed();
+            throw new ActivityRequestFailed(warningMessage, e);
         }
     }
 
-    public List<PreparedStatementExecution> retrievePreparedStatementExecutions() {
-        HttpGet get = new HttpGet(preparedStatementExecutionUrl);
-        try {
-            CloseableHttpResponse response = httpClient.execute(get);
-            String body = EntityUtils.toString(response.getEntity());
-            LOGGER.debug("Received response {}", body);
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != 200) {
-                LOGGER.info("Non 200 status code when retrieving prepared statement executions {}", statusCode);
-                throw new ActivityRequestFailed();
-            }
-            PreparedStatementExecution[] executions = (PreparedStatementExecution[]) gson.fromJson(body, (Class) PreparedStatementExecution[].class);
-            LOGGER.debug("Parsed prepared statement executions {}", Arrays.toString(executions));
-            return Arrays.asList(executions);
-        } catch (IOException e) {
-            LOGGER.info("Request for queries failed", e);
-            throw new ActivityRequestFailed();
-        }
-    }
 
 }

@@ -134,7 +134,7 @@ public class PrimingClientTest {
     @Test(expected = PrimeFailedException.class)
     public void testPrimeQueryFailed() {
         //given
-        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(500)));
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withBody("oh dear").withStatus(500)));
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.read_request_timeout)
@@ -353,7 +353,7 @@ public class PrimingClientTest {
         stubFor(post(urlEqualTo(PRIME_PREPARED_PATH))
                 .willReturn(aResponse().withBody("oh dear").withStatus(500)));
         //when
-        underTest.primePreparedStatement(PrimingRequest.preparedStatementBuilder().build());
+        underTest.primePreparedStatement(PrimingRequest.preparedStatementBuilder().withQuery("").build());
         //then
     }
 
@@ -363,7 +363,7 @@ public class PrimingClientTest {
         stubFor(post(urlEqualTo(PRIME_PREPARED_PATH))
                 .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
-        underTest.primePreparedStatement(PrimingRequest.preparedStatementBuilder().build());
+        underTest.primePreparedStatement(PrimingRequest.preparedStatementBuilder().withQuery("").build());
         //then
     }
 
