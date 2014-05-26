@@ -29,7 +29,7 @@ class ScassandraRunner implements Scassandra {
     ScassandraRunner(int binaryPort, int adminPort) {
         this.binaryPort = binaryPort;
         this.adminPort = adminPort;
-        this.serverStubRunner = new ServerStubRunner();
+        this.serverStubRunner = new ServerStubRunner(binaryPort, adminPort);
         this.primingClient = PrimingClient.builder().withPort(adminPort).build();
         this.activityClient = ActivityClient.builder().withPort(adminPort).build();
 
@@ -47,8 +47,6 @@ class ScassandraRunner implements Scassandra {
 
     @Override
     public void start() {
-        System.setProperty("scassandra.binary.port", String.valueOf(binaryPort));
-        System.setProperty("scassandra.admin.port", String.valueOf(adminPort));
         serverStubRunner.start();
         // The above start is async. Once scassandra offers a way to block until it is ready
         // we can remove this sleep.
