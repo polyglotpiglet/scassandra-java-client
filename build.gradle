@@ -15,7 +15,7 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots"
+        url "https://oss.sonatype.org/content/groups/staging"
     }
 }
 
@@ -93,7 +93,7 @@ uploadArchives {
 
 
 dependencies {
-    compile('org.scassandra:scassandra-server_2.10:0.1-SNAPSHOT')
+    compile('org.scassandra:scassandra-server_2.10:0.1')
     compile 'org.apache.httpcomponents:httpclient:4.3.3'
     compile 'com.google.code.gson:gson:2.2.4'
     compile 'org.slf4j:slf4j-api:1.7.6'
