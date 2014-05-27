@@ -249,21 +249,52 @@ public class PrimingClientTest {
         List<Map<String,? extends Object>> rows = new ArrayList<Map<String,? extends Object>>();
         Map<String, Object> row = new HashMap<String, Object>();
         List<String> set = Arrays.asList("one", "two", "three");
-        row.put("set",set);
+        row.put("set_type",set);
         rows.add(row);
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(rows)
+                .withColumnTypes(ImmutableMap.of("set_type", ColumnTypes.Set))
                 .build();
         //when
         underTest.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"}," +
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
                         "\"then\":{" +
                         "\"rows\":[" +
-                        "{\"set\":[\"one\",\"two\",\"three\"]}]," +
+                        "{\"set_type\":[\"one\",\"two\",\"three\"]}]," +
+                        "\"result\":\"success\"," +
+                        "\"column_types\":{\"set_type\":\"set\"}" +
+                        "}}")));
+
+    }
+
+    @Test
+    public void testPrimingQueryWithLists() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        List<Map<String,? extends Object>> rows = new ArrayList<Map<String,? extends Object>>();
+        Map<String, Object> row = new HashMap<String, Object>();
+        List<String> set = Arrays.asList("one", "two", "three");
+        row.put("list_type",set);
+        rows.add(row);
+        PrimingRequest pr = PrimingRequest.queryBuilder()
+                .withQuery("select * from people")
+                .withRows(rows)
+                .withColumnTypes(ImmutableMap.of("list_type", ColumnTypes.List))
+                .build();
+        //when
+        underTest.primeQuery(pr);
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
+                        "\"then\":{" +
+                        "\"rows\":[" +
+                        "{\"list_type\":[\"one\",\"two\",\"three\"]}]," +
+                        "\"column_types\":{\"list_type\":\"list\"}," +
                         "\"result\":\"success\"}}")));
 
     }

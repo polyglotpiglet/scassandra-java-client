@@ -69,4 +69,8 @@ public enum ColumnTypes {
 
     @SerializedName("set")
     Set,
+
+    @SerializedName("list")
+    List;
+
 }
