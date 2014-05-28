@@ -34,16 +34,13 @@ public class IntegrationTest {
     private static ActivityClient activityClient;
     private static PrimingClient primingClient;
 
+    @ClassRule
+    public static ScassandraServerRule rule = new ScassandraServerRule(SERVER);
+
     @BeforeClass
     public static void startScassandra() {
-        SERVER.start();
         activityClient = SERVER.activityClient();
         primingClient = SERVER.primingClient();
-    }
-
-    @AfterClass
-    public static void stopScassandra() {
-        SERVER.stop();
     }
 
     @Before
