@@ -7,3 +7,4 @@ build
 buildAndCopy.sh
 target
 *.bat
+.idea
