@@ -20,7 +20,7 @@ import java.util.List;
 public class PreparedStatementExecution {
     private String preparedStatementText;
     private String consistency;
-    private List<String> variables;
+    private List<Object> variables;
 
     public String getPreparedStatementText() {
         return preparedStatementText;
@@ -30,7 +30,7 @@ public class PreparedStatementExecution {
         return consistency;
     }
 
-    public List<String> getVariables() {
+    public List<Object> getVariables() {
         return variables;
     }
 
