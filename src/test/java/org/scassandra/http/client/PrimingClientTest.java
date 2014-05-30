@@ -254,7 +254,7 @@ public class PrimingClientTest {
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(rows)
-                .withColumnTypes(ImmutableMap.of("set_type", ColumnTypes.Set))
+                .withColumnTypes(ImmutableMap.of("set_type", ColumnTypes.VarcharSet))
                 .build();
         //when
         underTest.primeQuery(pr);
@@ -266,7 +266,7 @@ public class PrimingClientTest {
                         "\"rows\":[" +
                         "{\"set_type\":[\"one\",\"two\",\"three\"]}]," +
                         "\"result\":\"success\"," +
-                        "\"column_types\":{\"set_type\":\"set\"}" +
+                        "\"column_types\":{\"set_type\":\"set<varchar>\"}" +
                         "}}")));
 
     }
@@ -283,7 +283,7 @@ public class PrimingClientTest {
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(rows)
-                .withColumnTypes(ImmutableMap.of("list_type", ColumnTypes.List))
+                .withColumnTypes(ImmutableMap.of("list_type", ColumnTypes.VarcharList))
                 .build();
         //when
         underTest.primeQuery(pr);
@@ -294,7 +294,7 @@ public class PrimingClientTest {
                         "\"then\":{" +
                         "\"rows\":[" +
                         "{\"list_type\":[\"one\",\"two\",\"three\"]}]," +
-                        "\"column_types\":{\"list_type\":\"list\"}," +
+                        "\"column_types\":{\"list_type\":\"list<varchar>\"}," +
                         "\"result\":\"success\"}}")));
 
     }
@@ -303,7 +303,7 @@ public class PrimingClientTest {
     public void testPrimingQueryWithColumnTypesSpecified() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
-        Map<String, ColumnTypes> types = ImmutableMap.of("set_column", ColumnTypes.Set);
+        Map<String, ColumnTypes> types = ImmutableMap.of("set_column", ColumnTypes.VarcharSet);
         Map<String, Object> row = new HashMap<String, Object>();
         List<String> set = Arrays.asList("one", "two", "three");
         row.put("set_column",set);
@@ -323,7 +323,7 @@ public class PrimingClientTest {
                         "\"rows\":[" +
                         "{\"set_column\":[\"one\",\"two\",\"three\"]}]," +
                         "\"result\":\"success\"" +
-                        ",\"column_types\":{\"set_column\":\"set\"}}}")));
+                        ",\"column_types\":{\"set_column\":\"set<varchar>\"}}}")));
     }
 
     @Test

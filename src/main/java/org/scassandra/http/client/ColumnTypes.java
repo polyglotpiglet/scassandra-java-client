@@ -67,10 +67,22 @@ public enum ColumnTypes {
     @SerializedName("text")
     Text,
 
-    @SerializedName("set")
-    Set,
+    @SerializedName("set<varchar>")
+    VarcharSet,
 
-    @SerializedName("list")
-    List;
+    @SerializedName("set<ascii>")
+    AsciiSet,
+
+    @SerializedName("set<text>")
+    TextSet,
+
+    @SerializedName("list<varchar>")
+    VarcharList,
+
+    @SerializedName("list<ascii>")
+    AsciiList,
+
+    @SerializedName("list<text>")
+    TextList;
 
 }
