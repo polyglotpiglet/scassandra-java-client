@@ -15,12 +15,20 @@
  */
 package org.scassandra.http.client;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class PreparedStatementExecution {
-    private String preparedStatementText;
-    private String consistency;
-    private List<String> variables;
+public final class PreparedStatementExecution {
+    private final String preparedStatementText;
+    private final String consistency;
+    private final List<Object> variables;
+
+    private PreparedStatementExecution(String preparedStatementText, String consistency, List<Object> variables) {
+        this.preparedStatementText = preparedStatementText;
+        this.consistency = consistency;
+        this.variables = variables;
+    }
 
     public String getPreparedStatementText() {
         return preparedStatementText;
@@ -30,8 +38,8 @@ public class PreparedStatementExecution {
         return consistency;
     }
 
-    public List<String> getVariables() {
-        return variables;
+    public List<Object> getVariables() {
+        return Collections.unmodifiableList(variables);
     }
 
     @Override
@@ -41,5 +49,68 @@ public class PreparedStatementExecution {
                 ", consistency='" + consistency + '\'' +
                 ", variables=" + variables +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PreparedStatementExecution that = (PreparedStatementExecution) o;
+
+        if (consistency != null ? !consistency.equals(that.consistency) : that.consistency != null) return false;
+        if (preparedStatementText != null ? !preparedStatementText.equals(that.preparedStatementText) : that.preparedStatementText != null)
+            return false;
+        if (variables != null ? !variables.equals(that.variables) : that.variables != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = preparedStatementText != null ? preparedStatementText.hashCode() : 0;
+        result = 31 * result + (consistency != null ? consistency.hashCode() : 0);
+        result = 31 * result + (variables != null ? variables.hashCode() : 0);
+        return result;
+    }
+
+    public static PreparedStatementExecutionBuilder builder() {
+        return new PreparedStatementExecutionBuilder();
+    }
+
+    public static class PreparedStatementExecutionBuilder {
+
+        private String preparedStatementText;
+        private String consistency = "ONE";
+        private List<Object> variables = Collections.emptyList();
+
+        private PreparedStatementExecutionBuilder() {}
+
+        /**
+         * Defaults to ONE if not set.
+         * @param consistency Query consistency
+         * @return this builder
+         */
+        public PreparedStatementExecutionBuilder withConsistency(String consistency){
+            this.consistency = consistency;
+            return this;
+        }
+
+        public PreparedStatementExecutionBuilder withPreparedStatementText(String preparedStatementText){
+            this.preparedStatementText = preparedStatementText;
+            return this;
+        }
+
+        public PreparedStatementExecutionBuilder withVariables(Object... variables){
+            this.variables = Arrays.asList(variables);
+            return this;
+        }
+
+        public PreparedStatementExecution build() {
+            if (preparedStatementText == null) {
+                throw new IllegalStateException("Must set PreparedStatementExecutionBuilder");
+            }
+            return new PreparedStatementExecution(this.preparedStatementText, this.consistency, this.variables);
+        }
     }
 }

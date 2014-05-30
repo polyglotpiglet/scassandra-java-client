@@ -3,8 +3,8 @@
 *.iml
 .gradle
 out
-gradle
 build
 buildAndCopy.sh
 target
 *.bat
+.idea
