@@ -18,10 +18,12 @@ package org.scassandra;
 import com.google.common.collect.ImmutableMap;
 import org.junit.*;
 import org.scassandra.http.client.*;
+import org.scassandra.junit.ScassandraServerRule;
 
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /*
 TODO: Break up into multiple integration tests.
@@ -30,25 +32,16 @@ public class IntegrationTest {
 
     private static int binaryPort = 2345;
     private static int adminPort = 3456;
-    public static final Scassandra SERVER = ScassandraFactory.createServer(binaryPort, adminPort);
-    private static ActivityClient activityClient;
-    private static PrimingClient primingClient;
 
     @ClassRule
-    public static ScassandraServerRule rule = new ScassandraServerRule(SERVER);
+    public static ScassandraServerRule rule = new ScassandraServerRule(binaryPort, adminPort);
 
-    @BeforeClass
-    public static void startScassandra() {
-        activityClient = SERVER.activityClient();
-        primingClient = SERVER.primingClient();
-    }
+    @Rule
+    public ScassandraServerRule clearRule = rule;
 
-    @Before
-    public void setup() {
-        activityClient.clearConnections();
-        activityClient.clearQueries();
-        primingClient.clearQueryPrimes();
-    }
+    private static ActivityClient activityClient = rule.activityClient();
+    private static PrimingClient primingClient = rule.primingClient();
+
 
     @Test
     public void clientsShouldBeAbleToConnect() {
