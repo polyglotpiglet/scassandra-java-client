@@ -26,10 +26,10 @@ class ScassandraRunner implements Scassandra {
     private final int binaryPort;
     private final int adminPort;
 
-    ScassandraRunner(int binaryPort, int adminPort) {
+    ScassandraRunner(String binaryListenAddress, int binaryPort, String adminListenAddress, int adminPort) {
         this.binaryPort = binaryPort;
         this.adminPort = adminPort;
-        this.serverStubRunner = new ServerStubRunner(binaryPort, adminPort);
+        this.serverStubRunner = new ServerStubRunner(binaryListenAddress, binaryPort, adminListenAddress, adminPort);
         this.primingClient = PrimingClient.builder().withPort(adminPort).build();
         this.activityClient = ActivityClient.builder().withPort(adminPort).build();
 
