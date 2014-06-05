@@ -15,8 +15,18 @@
  */
 package org.scassandra;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.scassandra.http.client.ActivityClient;
 import org.scassandra.http.client.PrimingClient;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 class ScassandraRunner implements Scassandra {
 
@@ -25,6 +35,9 @@ class ScassandraRunner implements Scassandra {
     private final ActivityClient activityClient;
     private final int binaryPort;
     private final int adminPort;
+    private final String versionurl;
+    private final CloseableHttpClient httpClient = HttpClients.createDefault();
+    private final Gson gson = new Gson();
 
     ScassandraRunner(String binaryListenAddress, int binaryPort, String adminListenAddress, int adminPort) {
         this.binaryPort = binaryPort;
@@ -32,6 +45,7 @@ class ScassandraRunner implements Scassandra {
         this.serverStubRunner = new ServerStubRunner(binaryListenAddress, binaryPort, adminListenAddress, adminPort);
         this.primingClient = PrimingClient.builder().withPort(adminPort).build();
         this.activityClient = ActivityClient.builder().withPort(adminPort).build();
+        this.versionurl = "http://" + binaryListenAddress + ":" + adminPort + "/version";
 
     }
 
@@ -64,6 +78,18 @@ class ScassandraRunner implements Scassandra {
     @Override
     public int getBinaryPort() {
         return binaryPort;
+    }
+
+    @Override
+    public String serverVersion() {
+        HttpGet get = new HttpGet(versionurl);
+        try {
+            Type type = new TypeToken<Map<String, String>>(){}.getType();
+            Map<String, String> version = gson.fromJson(EntityUtils.toString(httpClient.execute(get).getEntity()), type);
+            return version.get("version");
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to get version", e);
+        }
     }
 
 }

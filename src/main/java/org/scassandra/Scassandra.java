@@ -59,4 +59,9 @@ public interface Scassandra {
      * @return Scassandra binary port
      */
     int getBinaryPort();
+
+    /**
+     * @return Scassandra server version.
+     */
+    String serverVersion();
 }
