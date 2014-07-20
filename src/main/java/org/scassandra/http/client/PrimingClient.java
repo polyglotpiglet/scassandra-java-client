@@ -74,10 +74,16 @@ public class PrimingClient {
     }
     
     public void primeQuery(PrimingRequest primeRequest) throws PrimeFailedException {
+        if (primeRequest.primeType != PrimingRequest.PrimingRequestBuilder.PrimeType.QUERY) {
+            throw new IllegalArgumentException("Can't pass a prepared statement prime to primeQuery, use queryBuilder()");
+        }
         prime(primeRequest, primeQueryUrl);
     }
 
     public void primePreparedStatement(PrimingRequest primeRequest) throws PrimeFailedException {
+        if (primeRequest.primeType != PrimingRequest.PrimingRequestBuilder.PrimeType.PREPARED) {
+            throw new IllegalArgumentException("Can't pass a query prime to primePreparedStatement, use preparedStatementBuilder()");
+        }
         prime(primeRequest, primePreparedUrl);
     }
 

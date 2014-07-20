@@ -33,7 +33,7 @@ public class PrimingRequestTest {
             fail("Expected illegal state exception");
         } catch (IllegalStateException e) {
             //then
-            assertEquals(e.getMessage(), "Variable types only applicable for a prepared statement prime. Not a query prime.");
+            assertEquals("Variable types only applicable for a prepared statement prime. Not a query prime", e.getMessage());
         }
     }
 
@@ -47,12 +47,30 @@ public class PrimingRequestTest {
             fail("Expected illegal state exception");
         } catch (IllegalStateException e) {
             //then
-            assertEquals(e.getMessage(), "Must set query for PrimingRequest.");
+            assertEquals("Must set either query or queryPattern for PrimingRequest", e.getMessage());
+        }
+    }
+
+    @Test
+    public void throwsIllegalStateExceptionIfQueryAndPatternSpecified() {
+        //given
+        //when
+        try {
+            PrimingRequest.queryBuilder()
+                    .withQuery("select something")
+                    .withQueryPattern("select something where name = .*")
+                    .build();
+            fail("Expected illegal state exception");
+        } catch (IllegalStateException e) {
+            //then
+            assertEquals("Can't specify query and queryPattern", e.getMessage());
         }
     }
 
     @Test
     public void testEqualsContract() {
-        EqualsVerifier.forClass(PrimingRequest.class).verify();
+        EqualsVerifier.forClass(PrimingRequest.When.class).allFieldsShouldBeUsed().verify();
+        EqualsVerifier.forClass(PrimingRequest.Then.class).allFieldsShouldBeUsed().verify();
+        EqualsVerifier.forClass(PrimingRequest.class).allFieldsShouldBeUsed().verify();
     }
 }

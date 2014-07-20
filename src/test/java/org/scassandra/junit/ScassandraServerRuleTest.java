@@ -11,8 +11,8 @@ import static org.junit.Assert.assertEquals;
 
 public class ScassandraServerRuleTest {
 
-    private static int binaryPort = 8042;
-    private static int adminPort = 8043;
+    private static int binaryPort = 7042;
+    private static int adminPort = 7043;
 
     @ClassRule
     public static ScassandraServerRule rule = new ScassandraServerRule(binaryPort, adminPort);

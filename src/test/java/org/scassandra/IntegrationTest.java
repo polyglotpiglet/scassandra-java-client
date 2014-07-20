@@ -107,7 +107,7 @@ public class IntegrationTest {
         //given
         Map<String, String> row = new HashMap<String, String>();
         row.put("name", "chris");
-        PrimingRequest prime = PrimingRequest.queryBuilder()
+        PrimingRequest prime = PrimingRequest.preparedStatementBuilder()
                 .withQuery("select * from people where name = ?")
                 .withRows(row)
                 .withConsistency(PrimingRequest.Consistency.ALL)

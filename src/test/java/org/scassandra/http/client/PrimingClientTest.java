@@ -17,6 +17,7 @@ package org.scassandra.http.client;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.http.Fault;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -169,7 +170,7 @@ public class PrimingClientTest {
     public void testRetrieveOfPreviousQueryPrimes() {
         //given
         Map<String, Object> rows = new HashMap<String, Object>();
-        rows.put("name","Chris");
+        rows.put("name", "Chris");
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(rows)
@@ -183,7 +184,7 @@ public class PrimingClientTest {
                         "    \"rows\": [{\n" +
                         "      \"name\": \"Chris\"\n" +
                         "    }],\n" +
-                        "    \"result\":\"success\""+
+                        "    \"result\":\"success\"" +
                         "  }\n" +
                         "}]"
         )));
@@ -236,7 +237,7 @@ public class PrimingClientTest {
         //given
         stubFor(get(urlEqualTo(PRIME_QUERY_PATH))
                 .willReturn(aResponse()
-                .withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
+                        .withFault(Fault.RANDOM_DATA_THEN_CLOSE)));
         //when
         underTest.retrieveQueryPrimes();
         //then
@@ -246,10 +247,10 @@ public class PrimingClientTest {
     public void testPrimingQueryWithSets() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
-        List<Map<String,? extends Object>> rows = new ArrayList<Map<String,? extends Object>>();
+        List<Map<String, ? extends Object>> rows = new ArrayList<Map<String, ? extends Object>>();
         Map<String, Object> row = new HashMap<String, Object>();
         List<String> set = Arrays.asList("one", "two", "three");
-        row.put("set_type",set);
+        row.put("set_type", set);
         rows.add(row);
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
@@ -275,10 +276,10 @@ public class PrimingClientTest {
     public void testPrimingQueryWithLists() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
-        List<Map<String,? extends Object>> rows = new ArrayList<Map<String,? extends Object>>();
+        List<Map<String, ? extends Object>> rows = new ArrayList<Map<String, ? extends Object>>();
         Map<String, Object> row = new HashMap<String, Object>();
         List<String> set = Arrays.asList("one", "two", "three");
-        row.put("list_type",set);
+        row.put("list_type", set);
         rows.add(row);
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
@@ -306,7 +307,7 @@ public class PrimingClientTest {
         Map<String, ColumnTypes> types = ImmutableMap.of("set_column", ColumnTypes.VarcharSet);
         Map<String, Object> row = new HashMap<String, Object>();
         List<String> set = Arrays.asList("one", "two", "three");
-        row.put("set_column",set);
+        row.put("set_column", set);
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withRows(row)
@@ -402,7 +403,7 @@ public class PrimingClientTest {
     public void retrievingOfPreparedStatementPrimes() {
         //given
         Map<String, Object> rows = new HashMap<String, Object>();
-        rows.put("name","Chris");
+        rows.put("name", "Chris");
         PrimingRequest pr = PrimingRequest.preparedStatementBuilder()
                 .withQuery("select * from people")
                 .withConsistency(PrimingRequest.Consistency.ANY)
@@ -479,4 +480,54 @@ public class PrimingClientTest {
         verify(deleteRequestedFor(urlEqualTo(PRIME_QUERY_PATH)));
     }
 
+
+    @Test
+    public void testPrimingWithQueryPattern() throws Exception {
+        //given
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        PrimingRequest primingRequest = PrimingRequest.queryBuilder()
+                .withQueryPattern("select \\* from person where name = .*")
+                .build();
+
+        //when
+        underTest.primeQuery(primingRequest);
+
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
+                .withRequestBody(equalToJson(
+                        "{\"when\":{\"queryPattern\":\"select \\\\* from person where name \\u003d .*\"}," +
+                                "\"then\":{\"rows\":[],\"result\":\"success\"}}")));
+    }
+
+    @Test
+    public void throwsIfQueryPrimePassedToPreparedStatementPrime() throws Exception {
+        //given
+        PrimingRequest primedRequest = PrimingRequest.queryBuilder()
+                .withQuery("select something")
+                .build();
+        //when
+        try {
+            underTest.primePreparedStatement(primedRequest);
+            fail("Expected Illegal argument exception");
+        } catch (IllegalArgumentException e) {
+            //then
+            assertEquals("Can't pass a query prime to primePreparedStatement, use preparedStatementBuilder()", e.getMessage());
+        }
+    }
+
+    @Test
+    public void throwsIfPreparedStatementPrimePassedToQueryPrime() throws Exception {
+        //given
+        PrimingRequest primedRequest = PrimingRequest.preparedStatementBuilder()
+                .withQuery("select something")
+                .build();
+        //when
+        try {
+            underTest.primeQuery(primedRequest);
+            fail("Expected Illegal argument exception");
+        } catch (IllegalArgumentException e) {
+            //then
+            assertEquals("Can't pass a prepared statement prime to primeQuery, use queryBuilder()", e.getMessage());
+        }
+    }
 }

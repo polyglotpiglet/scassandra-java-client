@@ -19,11 +19,13 @@ import java.util.*;
 
 public final class PrimingRequest {
 
+    transient PrimingRequestBuilder.PrimeType primeType;
+
     public static class PrimingRequestBuilder {
 
-        private PrimeType type;
+        PrimeType type;
 
-        private static enum PrimeType {
+        static enum PrimeType {
             QUERY, PREPARED
         }
 
@@ -35,11 +37,17 @@ public final class PrimingRequest {
         private ColumnTypes[] variableTypes;
         private Map<String, ColumnTypes> columnTypes;
         private String query;
+        private String queryPattern;
         private List<Map<String, ? extends Object>> rows;
         private Result result = Result.success;
 
         public PrimingRequestBuilder withQuery(String query) {
             this.query = query;
+            return this;
+        }
+
+        public PrimingRequestBuilder withQueryPattern(String queryPattern) {
+            this.queryPattern = queryPattern;
             return this;
         }
 
@@ -62,11 +70,15 @@ public final class PrimingRequest {
         public PrimingRequest build() {
 
             if (PrimeType.QUERY.equals(this.type) && this.variableTypes != null) {
-                throw new IllegalStateException("Variable types only applicable for a prepared statement prime. Not a query prime.");
+                throw new IllegalStateException("Variable types only applicable for a prepared statement prime. Not a query prime");
             }
 
-            if (query == null) {
-                throw new IllegalStateException("Must set query for PrimingRequest.");
+            if (query != null && queryPattern != null) {
+                throw new IllegalStateException("Can't specify query and queryPattern");
+            }
+
+            if (query == null && queryPattern == null) {
+                throw new IllegalStateException("Must set either query or queryPattern for PrimingRequest");
             }
 
             List<Consistency> consistencies = this.consistency == null ? null : Arrays.asList(this.consistency);
@@ -76,7 +88,7 @@ public final class PrimingRequest {
             if (result == Result.success && rows == null) {
                 rowsDefaultedToEmptyForSuccess = Collections.emptyList();
             }
-            return new PrimingRequest(this.query, consistencies, rowsDefaultedToEmptyForSuccess, this.result, this.columnTypes, this.variableTypes);
+            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypes, variableTypes);
         }
 
         public PrimingRequestBuilder withConsistency(Consistency... consistencies) {
@@ -106,8 +118,9 @@ public final class PrimingRequest {
     private final When when;
     private final Then then;
 
-    private PrimingRequest(String query, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> columnTypes, ColumnTypes[] variableTypes) {
-        this.when = new When(query, consistency);
+    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> columnTypes, ColumnTypes[] variableTypes) {
+        this.primeType = primeType;
+        this.when = new When(query, queryPattern, consistency);
         this.then = new Then(rows, result, columnTypes, variableTypes);
     }
 
@@ -147,11 +160,11 @@ public final class PrimingRequest {
                 '}';
     }
 
-    public static class Then {
+    public final static class Then {
         private final ColumnTypes[] variable_types;
-        private List<Map<String, ? extends Object>> rows;
-        private Result result;
-        private Map<String, ColumnTypes> column_types;
+        private final List<Map<String, ? extends Object>> rows;
+        private final Result result;
+        private final Map<String, ColumnTypes> column_types;
 
         private Then(List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> column_types, ColumnTypes[] variable_types) {
             this.rows = rows;
@@ -161,28 +174,20 @@ public final class PrimingRequest {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            Then then = (Then) o;
-
-            if (column_types != null ? !column_types.equals(then.column_types) : then.column_types != null)
-                return false;
-            if (result != then.result) return false;
-            if (rows != null ? !rows.equals(then.rows) : then.rows != null) return false;
-            if (!Arrays.equals(variable_types, then.variable_types)) return false;
-
-            return true;
+        public int hashCode() {
+            return Objects.hash(rows, result, column_types) + Arrays.hashCode(variable_types);
         }
 
         @Override
-        public int hashCode() {
-            int result1 = variable_types != null ? Arrays.hashCode(variable_types) : 0;
-            result1 = 31 * result1 + (rows != null ? rows.hashCode() : 0);
-            result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
-            result1 = 31 * result1 + (column_types != null ? column_types.hashCode() : 0);
-            return result1;
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            final Then other = (Then) obj;
+            return Arrays.equals(this.variable_types, other.variable_types) && Objects.equals(this.rows, other.rows) && Objects.equals(this.result, other.result) && Objects.equals(this.column_types, other.column_types);
         }
 
         @Override
@@ -212,41 +217,41 @@ public final class PrimingRequest {
         }
     }
 
-    public static class When {
-        private String query;
-        private List<Consistency> consistency;
+    public final static class When {
+        private final String query;
+        private final String queryPattern;
+        private final List<Consistency> consistency;
 
-        private When(String query, List<Consistency> consistency) {
+        private When(String query, String queryPattern, List<Consistency> consistency) {
             this.query = query;
             this.consistency = consistency;
+            this.queryPattern = queryPattern;
         }
 
         @Override
         public String toString() {
             return "When{" +
                     "query='" + query + '\'' +
+                    ", queryPattern='" + queryPattern + '\'' +
                     ", consistency=" + consistency +
                     '}';
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            When when = (When) o;
-
-            if (consistency != null ? !consistency.equals(when.consistency) : when.consistency != null) return false;
-            if (query != null ? !query.equals(when.query) : when.query != null) return false;
-
-            return true;
+        public int hashCode() {
+            return Objects.hash(query, queryPattern, consistency);
         }
 
         @Override
-        public int hashCode() {
-            int result = query != null ? query.hashCode() : 0;
-            result = 31 * result + (consistency != null ? consistency.hashCode() : 0);
-            return result;
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            final When other = (When) obj;
+            return Objects.equals(this.query, other.query) && Objects.equals(this.queryPattern, other.queryPattern) && Objects.equals(this.consistency, other.consistency);
         }
 
         public String getQuery() {
