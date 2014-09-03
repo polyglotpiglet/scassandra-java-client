@@ -83,6 +83,34 @@ public enum ColumnTypes {
     AsciiList,
 
     @SerializedName("list<text>")
-    TextList;
+    TextList,
+
+    @SerializedName("map<varchar,varchar>")
+    VarcharVarcharMap,
+
+    @SerializedName("map<varchar,text>")
+    VarcharTextMap,
+
+    @SerializedName("map<varchar,ascii>")
+    VarcharAsciiMap,
+
+    @SerializedName("map<text,varchar>")
+    TextVarcharMap,
+
+    @SerializedName("map<text,text>")
+    TextTextMap,
+
+    @SerializedName("map<text,ascii>")
+    TextAsciiMap,
+
+    @SerializedName("map<ascii,varchar>")
+    AsciiVarcharMap,
+
+    @SerializedName("map<ascii,text>")
+    AsciiTextMap,
+
+    @SerializedName("map<ascii,ascii>")
+    AsciiAsciiMap
+    ;
 
 }

@@ -530,4 +530,66 @@ public class PrimingClientTest {
             assertEquals("Can't pass a prepared statement prime to primeQuery, use queryBuilder()", e.getMessage());
         }
     }
+
+    @Test
+    public void testPrimingQueryWithMap() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        List<Map<String, ? extends Object>> rows = new ArrayList<Map<String, ? extends Object>>();
+        Map<String, Object> row = new HashMap<String, Object>();
+        Map<String, String> map = ImmutableMap.of(
+                "one", "two",
+                "three", "four");
+        row.put("map_type", map);
+        rows.add(row);
+        PrimingRequest pr = PrimingRequest.queryBuilder()
+                .withQuery("select * from people")
+                .withRows(rows)
+                .withColumnTypes(ImmutableMap.of("map_type", ColumnTypes.VarcharVarcharMap))
+                .build();
+        //when
+        underTest.primeQuery(pr);
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
+                        "\"then\":{" +
+                        "\"rows\":[" +
+                        "{\"map_type\":{\"one\":\"two\",\"three\":\"four\"}}]," +
+                        "\"result\":\"success\"," +
+                        "\"column_types\":{\"map_type\":\"map<varchar,varchar>\"}}}"
+                       )));
+
+    }
+
+    @Test
+    public void testPrimingPreparedStatementWithMap() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withStatus(200)));
+        List<Map<String, ? extends Object>> rows = new ArrayList<Map<String, ? extends Object>>();
+        Map<String, Object> row = new HashMap<String, Object>();
+        Map<String, String> map = ImmutableMap.of(
+                "one", "two",
+                "three", "four");
+        row.put("map_type", map);
+        rows.add(row);
+        PrimingRequest pr = PrimingRequest.preparedStatementBuilder()
+                .withQuery("select * from people where blah = ?")
+                .withRows(rows)
+                .withColumnTypes(ImmutableMap.of("map_type", ColumnTypes.VarcharVarcharMap))
+                .build();
+        //when
+        underTest.primePreparedStatement(pr);
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_PREPARED_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people where blah = ?\"}," +
+                        "\"then\":{" +
+                        "\"rows\":[" +
+                        "{\"map_type\":{\"one\":\"two\",\"three\":\"four\"}}]," +
+                        "\"result\":\"success\"," +
+                        "\"column_types\":{\"map_type\":\"map<varchar,varchar>\"}}}"
+                )));
+
+    }
 }
