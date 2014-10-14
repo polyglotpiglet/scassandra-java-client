@@ -11,6 +11,13 @@ compileJava {
     targetCompatibility = "1.6"
 }
 
+if (!project.hasProperty("ossrhUsername")) {
+    ext.ossrhUsername = "dummy"
+}
+if (!project.hasProperty("ossrhPassword")) {
+    ext.ossrhPassword = "dummy"
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
