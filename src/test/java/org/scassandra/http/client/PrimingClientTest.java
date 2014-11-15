@@ -82,6 +82,49 @@ public class PrimingClientTest {
     }
 
     @Test
+    public void testPrimingQueryWithFixedDelay() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        Map<String, String> row = new HashMap<String, String>();
+        row.put("name", "Chris");
+        PrimingRequest pr = PrimingRequest.queryBuilder()
+                .withQuery("select * from people")
+                .withFixedDelay(200l)
+                .withRows(row)
+                .build();
+        //when
+        underTest.primeQuery(pr);
+
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
+                        "\"then\":{\"rows\":[{\"name\":\"Chris\"}],\"result\":\"success\", \"fixedDelay\":200}}")));
+    }
+
+    @Test
+    public void testPrimingPreparedStatementWithFixedDelay() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withStatus(200)));
+        Map<String, String> row = new HashMap<String, String>();
+        row.put("name", "Chris");
+        PrimingRequest pr = PrimingRequest.preparedStatementBuilder()
+                .withQuery("select * from people")
+                .withFixedDelay(200l)
+                .withRows(row)
+                .build();
+
+        //when
+        underTest.primePreparedStatement(pr);
+
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_PREPARED_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
+                        "\"then\":{\"rows\":[{\"name\":\"Chris\"}],\"result\":\"success\", \"fixedDelay\":200}}")));
+    }
+
+    @Test
     public void testPrimingQueryReadRequestTimeout() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));

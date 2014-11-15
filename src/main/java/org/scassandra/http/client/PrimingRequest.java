@@ -40,6 +40,7 @@ public final class PrimingRequest {
         private String queryPattern;
         private List<Map<String, ? extends Object>> rows;
         private Result result = Result.success;
+        private Long fixedDelay;
 
         public PrimingRequestBuilder withQuery(String query) {
             this.query = query;
@@ -48,6 +49,12 @@ public final class PrimingRequest {
 
         public PrimingRequestBuilder withQueryPattern(String queryPattern) {
             this.queryPattern = queryPattern;
+            return this;
+        }
+
+
+        public PrimingRequestBuilder withFixedDelay(long fixedDelay) {
+            this.fixedDelay = fixedDelay;
             return this;
         }
 
@@ -88,7 +95,7 @@ public final class PrimingRequest {
             if (result == Result.success && rows == null) {
                 rowsDefaultedToEmptyForSuccess = Collections.emptyList();
             }
-            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypes, variableTypes);
+            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypes, variableTypes, fixedDelay);
         }
 
         public PrimingRequestBuilder withConsistency(Consistency... consistencies) {
@@ -118,10 +125,10 @@ public final class PrimingRequest {
     private final When when;
     private final Then then;
 
-    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> columnTypes, ColumnTypes[] variableTypes) {
+    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> columnTypes, ColumnTypes[] variableTypes, Long fixedDelay) {
         this.primeType = primeType;
         this.when = new When(query, queryPattern, consistency);
-        this.then = new Then(rows, result, columnTypes, variableTypes);
+        this.then = new Then(rows, result, columnTypes, variableTypes, fixedDelay);
     }
 
     public When getWhen() {
@@ -165,17 +172,19 @@ public final class PrimingRequest {
         private final List<Map<String, ? extends Object>> rows;
         private final Result result;
         private final Map<String, ColumnTypes> column_types;
+        private final Long fixedDelay;
 
-        private Then(List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> column_types, ColumnTypes[] variable_types) {
+        private Then(List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> column_types, ColumnTypes[] variable_types, Long fixedDelay) {
             this.rows = rows;
             this.result = result;
             this.column_types = column_types;
             this.variable_types = variable_types;
+            this.fixedDelay = fixedDelay;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(rows, result, column_types) + Arrays.hashCode(variable_types);
+            return Objects.hash(rows, result, column_types, fixedDelay) + Arrays.hashCode(variable_types);
         }
 
         @Override
@@ -187,7 +196,11 @@ public final class PrimingRequest {
                 return false;
             }
             final Then other = (Then) obj;
-            return Arrays.equals(this.variable_types, other.variable_types) && Objects.equals(this.rows, other.rows) && Objects.equals(this.result, other.result) && Objects.equals(this.column_types, other.column_types);
+            return Arrays.equals(this.variable_types, other.variable_types) &&
+                    Objects.equals(this.rows, other.rows) &&
+                    Objects.equals(this.result, other.result) &&
+                    Objects.equals(this.column_types, other.column_types) &&
+                    Objects.equals(this.fixedDelay, other.fixedDelay);
         }
 
         @Override
@@ -197,6 +210,7 @@ public final class PrimingRequest {
                     ", rows=" + rows +
                     ", result=" + result +
                     ", column_types=" + column_types +
+                    ", fixedDelay=" + fixedDelay +
                     '}';
         }
 
@@ -214,6 +228,10 @@ public final class PrimingRequest {
 
         public Map<String, ColumnTypes> getColumnTypes() {
             return Collections.unmodifiableMap(column_types);
+        }
+
+        public long getFixedDelay() {
+            return fixedDelay;
         }
     }
 
