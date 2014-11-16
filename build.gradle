@@ -68,12 +68,12 @@ uploadArchives {
                 packaging 'jar'
                 // optionally artifactId can be defined here
                 description 'Allows Java applications to use Scassandra'
-                url 'https://github.com/chbatey/scassandra-java-client'
+                url 'https://github.com/scassandra/scassandra-java-client'
 
                 scm {
-                    connection 'scm:git:git@github.com:chbatey/scassandra-java-client.git'
-                    developerConnection 'scm:git:git@github.com:chbatey/scassandra-java-client.git'
-                    url 'https://github.com/chbatey/scassandra-java-client'
+                    connection 'scm:git:git@github.com:scassandra/scassandra-java-client.git'
+                    developerConnection 'git@github.com:scassandra/scassandra-java-client.git'
+                    url 'https://github.com/scassandra/scassandra-java-client'
                 }
 
                 licenses {
