@@ -103,7 +103,7 @@ uploadArchives {
 
 
 dependencies {
-    compile('org.scassandra:scassandra-server_2.10:0.3.0-SNAPSHOT')
+    compile('org.scassandra:scassandra-server_2.10:0.4.0-SNAPSHOT')
     compile 'org.apache.httpcomponents:httpclient:4.3.3'
     compile 'com.google.code.gson:gson:2.2.4'
     compile 'org.slf4j:slf4j-api:1.7.6'
