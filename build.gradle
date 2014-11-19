@@ -110,7 +110,6 @@ dependencies {
     compile 'junit:junit:4.11'
     testCompile 'ch.qos.logback:logback-classic:1.1.1'
     testCompile 'org.mockito:mockito-all:1.9.5'
-    testCompile 'org.powermock:powermock-mockito-release-full:1.5'
     testCompile 'com.github.tomakehurst:wiremock:1.46'
     testCompile 'nl.jqno.equalsverifier:equalsverifier:1.4.1'
     testCompile "com.googlecode.jarjar:jarjar:1.3"
