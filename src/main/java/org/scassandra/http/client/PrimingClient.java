@@ -82,6 +82,7 @@ public class PrimingClient {
     }
 
     /**
+     * @param primeRequest The Prime
      * @deprecated Use prime() instead.
      */
     @Deprecated
@@ -93,6 +94,7 @@ public class PrimingClient {
     }
 
     /**
+     * @param primeRequest The Prime
      * @deprecated Use prime() instead.
      */
     public void primePreparedStatement(PrimingRequest primeRequest) throws PrimeFailedException {

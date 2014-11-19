@@ -9,7 +9,6 @@ import java.util.List;
 class QueryMatcher extends TypeSafeMatcher<List<Query>> {
 
     private Query query;
-    private List<Query> queries;
 
     public QueryMatcher(Query query) {
         if (query == null) throw new IllegalArgumentException("null query");
@@ -18,12 +17,19 @@ class QueryMatcher extends TypeSafeMatcher<List<Query>> {
 
     @Override
     protected boolean matchesSafely(List<Query> queries) {
-        this.queries = queries;
         return queries.contains(this.query);
     }
 
     @Override
+    public void describeMismatchSafely(List<Query> actual, Description description) {
+        description.appendText("the following queries were executed: ");
+        for (Query query : actual) {
+            description.appendText("\n" + query);
+        }
+    }
+
+    @Override
     public void describeTo(Description description) {
-        description.appendText("Expected query " + query + " but only the following were executed: " + queries);
+        description.appendText("Expected query " + query + " to be executed");
     }
 }

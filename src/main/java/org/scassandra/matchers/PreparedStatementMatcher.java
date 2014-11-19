@@ -9,7 +9,6 @@ import java.util.List;
 public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedStatementExecution>> {
 
     private PreparedStatementExecution expectedPreparedStatementExecution;
-    private List<PreparedStatementExecution> queries;
 
     public PreparedStatementMatcher(PreparedStatementExecution expectedPreparedStatementExecution) {
         if (expectedPreparedStatementExecution == null)
@@ -18,8 +17,20 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
     }
 
     @Override
+    public void describeMismatchSafely(List<PreparedStatementExecution> preparedStatementExecutions, Description description) {
+        description.appendText("the following prepared statements were executed: ");
+        for (PreparedStatementExecution preparedStatement : preparedStatementExecutions) {
+            description.appendText("\n" + preparedStatement);
+        }
+    }
+
+    @Override
+    public void describeTo(Description description) {
+        description.appendText("Expected prepared statement " + expectedPreparedStatementExecution + " to be executed");
+    }
+
+    @Override
     protected boolean matchesSafely(List<PreparedStatementExecution> queries) {
-        this.queries = queries;
         for (PreparedStatementExecution query : queries) {
             if (doesPreparedStatementMatch(query)) {
                 return true;
@@ -63,12 +74,4 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
         }
         return true;
     }
-
-    @Override
-    public void describeTo(Description description) {
-        description.appendText("Expected prepared statement to be executed\n");
-        description.appendText("Expected: " + expectedPreparedStatementExecution);
-        description.appendValueList("\nActual:  ", "\nActual:  ", "", queries);
-    }
-
 }

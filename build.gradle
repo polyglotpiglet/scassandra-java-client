@@ -100,8 +100,6 @@ uploadArchives {
     }
 }
 
-
-
 dependencies {
     compile('org.scassandra:scassandra-server_2.10:0.4.0-SNAPSHOT')
     compile 'org.apache.httpcomponents:httpclient:4.3.3'
