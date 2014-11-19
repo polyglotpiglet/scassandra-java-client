@@ -72,7 +72,19 @@ public class PrimingClient {
         this.primeQueryUrl = "http://" + host + ":" + port + "/prime-query-single";
         this.primePreparedUrl = "http://" + host + ":" + port + "/prime-prepared-single";
     }
-    
+
+    public void prime(PrimingRequest prime) throws PrimeFailedException {
+        if (prime.primeType == PrimingRequest.PrimingRequestBuilder.PrimeType.QUERY) {
+            this.primeQuery(prime);
+        } else {
+            this.primePreparedStatement(prime);
+        }
+    }
+
+    /**
+     * @deprecated Use prime() instead.
+     */
+    @Deprecated
     public void primeQuery(PrimingRequest primeRequest) throws PrimeFailedException {
         if (primeRequest.primeType != PrimingRequest.PrimingRequestBuilder.PrimeType.QUERY) {
             throw new IllegalArgumentException("Can't pass a prepared statement prime to primeQuery, use queryBuilder()");
@@ -80,6 +92,9 @@ public class PrimingClient {
         prime(primeRequest, primeQueryUrl);
     }
 
+    /**
+     * @deprecated Use prime() instead.
+     */
     public void primePreparedStatement(PrimingRequest primeRequest) throws PrimeFailedException {
         if (primeRequest.primeType != PrimingRequest.PrimingRequestBuilder.PrimeType.PREPARED) {
             throw new IllegalArgumentException("Can't pass a query prime to primePreparedStatement, use preparedStatementBuilder()");

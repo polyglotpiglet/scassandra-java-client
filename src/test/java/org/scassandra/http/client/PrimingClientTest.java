@@ -45,6 +45,50 @@ public class PrimingClientTest {
         underTest = PrimingClient.builder().withHost("localhost").withPort(PORT).build();
     }
 
+
+    @Test
+    public void primeQueryUsingPrimeMethod() throws Exception {
+        //given
+        stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        PrimingRequest pr = PrimingRequest.queryBuilder()
+                .withQuery("select * from people")
+                .withRows(Collections.<Map<String, ?>>emptyList())
+                .build();
+        //when
+        underTest.prime(pr);
+
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
+                        " \"then\":{\"rows\":[],\"result\":\"success\"}}")));
+    }
+
+    @Test
+    public void testPrimingPreparedStatementUsingPrimeMethod() {
+        //given
+        stubFor(post(urlEqualTo(PRIME_PREPARED_PATH)).willReturn(aResponse().withStatus(200)));
+        PrimingRequest primingRequest = PrimingRequest.preparedStatementBuilder()
+                .withQuery("select * from people where people = ?")
+                .build();
+
+        //when
+        underTest.prime(primingRequest);
+
+        //then
+        verify(postRequestedFor(urlEqualTo(PRIME_PREPARED_PATH))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(equalToJson("{" +
+                        "   \"when\": { " +
+                        "     \"query\" :\"select * from people where people = ?\"" +
+                        "   }," +
+                        "   \"then\": {" +
+                        "     \"rows\" :[]," +
+                        "     \"result\":\"success\" " +
+                        "   }" +
+                        " }")));
+    }
+
     @Test
     public void testPrimingQueryEmptyResults() {
         //given
