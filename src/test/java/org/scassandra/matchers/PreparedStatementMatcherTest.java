@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.scassandra.http.client.PreparedStatementExecution;
 
+import java.util.UUID;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -146,6 +148,51 @@ public class PreparedStatementMatcherTest {
 
         //when
         boolean matched = underTest.matchesSafely(Lists.newArrayList(matchAgainst));
+
+        //then
+        assertTrue(matched);
+    }
+
+    @Test
+    public void numbersMatchingUUIDsWithUUIDClass() throws Exception {
+        //given
+        UUID uuid = UUID.randomUUID();
+        UUID theSame = UUID.fromString(uuid.toString());
+        PreparedStatementExecution expected = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(uuid)
+                .build();
+        PreparedStatementExecution actual = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(theSame)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expected);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actual));
+
+        //then
+        assertTrue(matched);
+    }
+    @Test
+    public void numbersMatchingUUIDsWithUUIDAsString() throws Exception {
+        //given
+        UUID uuid = UUID.randomUUID();
+        UUID theSame = UUID.fromString(uuid.toString());
+        PreparedStatementExecution expected = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(uuid)
+                .build();
+        PreparedStatementExecution actual = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(theSame.toString())
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expected);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actual));
 
         //then
         assertTrue(matched);

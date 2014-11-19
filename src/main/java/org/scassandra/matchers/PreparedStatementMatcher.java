@@ -5,6 +5,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.scassandra.http.client.PreparedStatementExecution;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedStatementExecution>> {
 
@@ -53,8 +54,8 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
 
         for (int index = 0; index < expectedVariables.size(); index++) {
 
-            Object actualVariable = actualVariables.get(index);
             Object expectedVariable = expectedVariables.get(index);
+            Object actualVariable = actualVariables.get(index);
 
             if (actualVariable instanceof Double) {
                 Double castToDouble;
@@ -64,6 +65,10 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
                     return false;
                 }
                 if (!castToDouble.equals(actualVariable)) {
+                    return false;
+                }
+            } else if (expectedVariable instanceof UUID && !(actualVariable instanceof UUID)) {
+                if (!expectedVariable.toString().equals(actualVariable)) {
                     return false;
                 }
             } else {
