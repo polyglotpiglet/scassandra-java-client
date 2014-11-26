@@ -4,12 +4,18 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.scassandra.http.client.PreparedStatementExecution;
 
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class PreparedStatementMatcherTest {
+
+    //todo blob
+
     @Test
     public void matchWithJustQuery() throws Exception {
         //given
@@ -135,19 +141,62 @@ public class PreparedStatementMatcherTest {
     @Test
     public void numbersMatchingDoubles() throws Exception {
         //given
-        PreparedStatementExecution toMatch = PreparedStatementExecution.builder()
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
                 .withVariables(new Byte("1"), new Short("2"), 3, 4L)
                 .build();
-        PreparedStatementExecution matchAgainst = PreparedStatementExecution.builder()
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
                 .withVariables(1.0, 2.0, 3.0, 4.0)
                 .build();
 
-        PreparedStatementMatcher underTest = new PreparedStatementMatcher(toMatch);
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
 
         //when
-        boolean matched = underTest.matchesSafely(Lists.newArrayList(matchAgainst));
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
+
+        //then
+        assertTrue(matched);
+    }
+
+    @Test
+    public void numbersMatchingFloats() throws Exception {
+        //given
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(new Byte("1"), new Short("2"), 3, 4L)
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(1.0f, 2.0f, 3.0f, 4.0f)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
+
+        //then
+        assertTrue(matched);
+    }
+
+    @Test
+    public void inetMatching() throws Exception {
+        //given
+        InetAddress inetAddress = InetAddress.getLocalHost();
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(inetAddress.getHostAddress())
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(inetAddress)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
 
         //then
         assertTrue(matched);
@@ -256,6 +305,31 @@ public class PreparedStatementMatcherTest {
 
         //when
         boolean matched = underTest.matchesSafely(Lists.newArrayList(matchAgainst));
+
+        //then
+        assertFalse(matched);
+    }
+
+    @Test
+    public void matchNullAgainstSomethingElseIsFalse() throws Exception {
+        //given
+
+        PreparedStatementExecution toMatch = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(1.0)
+                .build();
+        List<Object> variables = new ArrayList<>();
+        variables.add(null);
+
+        PreparedStatementExecution matchAgainst = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(variables)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(matchAgainst);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(toMatch));
 
         //then
         assertFalse(matched);

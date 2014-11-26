@@ -106,6 +106,11 @@ public final class PreparedStatementExecution {
             return this;
         }
 
+        public PreparedStatementExecutionBuilder withVariables(List<Object> variables) {
+            this.variables = variables;
+            return this;
+        }
+
         public PreparedStatementExecution build() {
             if (preparedStatementText == null) {
                 throw new IllegalStateException("Must set PreparedStatementExecutionBuilder");

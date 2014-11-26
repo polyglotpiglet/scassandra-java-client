@@ -4,7 +4,10 @@ import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.scassandra.http.client.PreparedStatementExecution;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedStatementExecution>> {
@@ -40,6 +43,10 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
         return false;
     }
 
+    /*
+    The server sends back all floats and doubles as strings to preserve accuracy so we convert the
+    actual variable to the expected variables type
+     */
     private boolean doesPreparedStatementMatch(PreparedStatementExecution actualPreparedStatementExecution) {
         if (!actualPreparedStatementExecution.getConsistency().equals(expectedPreparedStatementExecution.getConsistency()))
             return false;
@@ -57,7 +64,7 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
             Object expectedVariable = expectedVariables.get(index);
             Object actualVariable = actualVariables.get(index);
 
-            if (actualVariable instanceof Double) {
+            if (actualVariable instanceof Double && expectedVariable != null) {
                 Double castToDouble;
                 try {
                     castToDouble = new Double(expectedVariable.toString());
@@ -71,8 +78,32 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
                 if (!expectedVariable.toString().equals(actualVariable)) {
                     return false;
                 }
-            } else {
-                if (!expectedVariable.equals(actualVariable)) {
+            } else if (expectedVariable instanceof Double) {
+                Double castToDouble;
+                try {
+                    castToDouble = new Double(actualVariable.toString());
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+                if (!castToDouble.equals(expectedVariable)) {
+                    return false;
+                }
+            } else if (expectedVariable instanceof Float) {
+                Float castToFloat;
+                try {
+                    castToFloat = new Float(actualVariable.toString());
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+                if (!castToFloat.equals(expectedVariable)) {
+                    return false;
+                }
+            } else if (expectedVariable instanceof InetAddress) {
+                if (!actualVariable.equals(((InetAddress) expectedVariable).getHostAddress())) {
+                    return false;
+                }
+            }else {
+                if (!Objects.equals(expectedVariable, actualVariable)) {
                     return false;
                 }
             }
