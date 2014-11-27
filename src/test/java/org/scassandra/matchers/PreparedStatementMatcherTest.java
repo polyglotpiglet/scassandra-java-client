@@ -4,7 +4,9 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.scassandra.http.client.PreparedStatementExecution;
 
+import java.math.BigDecimal;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -116,7 +118,6 @@ public class PreparedStatementMatcherTest {
         assertTrue(matched);
     }
 
-
     @Test
     public void machingNumbers() throws Exception {
         //given
@@ -181,6 +182,52 @@ public class PreparedStatementMatcherTest {
     }
 
     @Test
+    public void numbersMatchingBlobsWithByteBuffer() throws Exception {
+        //given
+        byte[] byteArray = new byte[] {1,2,3,4,5,6,7,8,9,10};
+        ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray);
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables("0x0102030405060708090a")
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(byteBuffer)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
+
+        //then
+        assertTrue(matched);
+    }
+
+    @Test
+    public void numbersMatchingBlobsWhenNotInActualReturnsFalse() throws Exception {
+        //given
+        byte[] byteArray = new byte[] {1,2,3,4,5,6,7,8,9,10};
+        ByteBuffer byteBuffer = ByteBuffer.wrap(byteArray);
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(1.0)
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(byteBuffer)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
+
+        //then
+        assertFalse(matched);
+    }
+
+    @Test
     public void inetMatching() throws Exception {
         //given
         InetAddress inetAddress = InetAddress.getLocalHost();
@@ -191,6 +238,50 @@ public class PreparedStatementMatcherTest {
         PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
                 .withVariables(inetAddress)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
+
+        //then
+        assertTrue(matched);
+    }
+
+    @Test
+    public void decimalMatchingAsDouble() throws Exception {
+        //given
+        BigDecimal decimal = new BigDecimal(90);
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(90.0)
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(decimal)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
+
+        //then
+        assertTrue(matched);
+    }
+
+    @Test
+    public void decimalMatchingAsBigDecimal() throws Exception {
+        //given
+        BigDecimal decimal = new BigDecimal(90);
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(decimal)
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(decimal)
                 .build();
 
         PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);

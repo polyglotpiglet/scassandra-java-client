@@ -1,11 +1,13 @@
 package org.scassandra.matchers;
 
+import org.apache.commons.codec.binary.Hex;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.scassandra.http.client.PreparedStatementExecution;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -102,7 +104,15 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
                 if (!actualVariable.equals(((InetAddress) expectedVariable).getHostAddress())) {
                     return false;
                 }
-            }else {
+            } else if (expectedVariable instanceof ByteBuffer) {
+                ByteBuffer bb = (ByteBuffer) expectedVariable;
+                byte[] b = new byte[bb.remaining()];
+                bb.get(b);
+                String encodedExpected = Hex.encodeHexString(b);
+                if (!encodedExpected.equals(actualVariable.toString().replaceFirst("0x", ""))) {
+                    return false;
+                }
+            } else {
                 if (!Objects.equals(expectedVariable, actualVariable)) {
                     return false;
                 }
