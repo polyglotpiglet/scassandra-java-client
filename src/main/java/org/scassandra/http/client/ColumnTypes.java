@@ -85,6 +85,42 @@ public enum ColumnTypes {
     @SerializedName("list<text>")
     TextList,
 
+    @SerializedName("list<bigint>")
+    BigintList,
+
+    @SerializedName("list<blob>")
+    BlobList,
+
+    @SerializedName("list<boolean>")
+    BooleanList,
+
+    @SerializedName("list<decimal>")
+    DecimalList,
+
+    @SerializedName("list<double>")
+    DoubleList,
+
+    @SerializedName("list<float>")
+    FloatList,
+
+    @SerializedName("list<inet>")
+    InetList,
+
+    @SerializedName("list<int>")
+    IntList,
+
+    @SerializedName("list<timestamp>")
+    TimestampList,
+
+    @SerializedName("list<timeuuid>")
+    TimeuuidList,
+
+    @SerializedName("list<uuid>")
+    UuidList,
+
+    @SerializedName("list<varint>")
+    VarintList,
+
     @SerializedName("map<varchar,varchar>")
     VarcharVarcharMap,
 
