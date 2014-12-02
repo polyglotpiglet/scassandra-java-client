@@ -76,6 +76,42 @@ public enum ColumnTypes {
     @SerializedName("set<text>")
     TextSet,
 
+    @SerializedName("set<bigint>")
+    BigintSet,
+
+    @SerializedName("set<blob>")
+    BlobSet,
+
+    @SerializedName("set<boolean>")
+    BooleanSet,
+
+    @SerializedName("set<decimal>")
+    DecimalSet,
+
+    @SerializedName("set<double>")
+    DoubleSet,
+
+    @SerializedName("set<float>")
+    FloatSet,
+
+    @SerializedName("set<inet>")
+    InetSet,
+
+    @SerializedName("set<int>")
+    IntSet,
+
+    @SerializedName("set<timestamp>")
+    TimestampSet,
+
+    @SerializedName("set<timeuuid>")
+    TimeuuidSet,
+
+    @SerializedName("set<uuid>")
+    UuidSet,
+
+    @SerializedName("set<varint>")
+    VarintSet,
+
     @SerializedName("list<varchar>")
     VarcharList,
 
