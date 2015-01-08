@@ -24,7 +24,7 @@ public class ScassandraFactory {
      * @param adminPort Scassandra admin port
      * @return An instance of Scassandra configured with the given ports.
      */
-    public static final Scassandra createServer(int binaryPort, int adminPort) {
+    public static Scassandra createServer(int binaryPort, int adminPort) {
         return new ScassandraRunner("localhost", binaryPort, "localhost", adminPort);
     }
 
@@ -35,7 +35,7 @@ public class ScassandraFactory {
      * @param adminPort Scassandra admin port
      * @return An instance of Scassandra configured with the given ports.
      */
-    public static final Scassandra createServer(String binaryListenAddress, int binaryPort, String adminListenAddress, int adminPort) {
+    public static Scassandra createServer(String binaryListenAddress, int binaryPort, String adminListenAddress, int adminPort) {
         return new ScassandraRunner(binaryListenAddress, binaryPort, adminListenAddress, adminPort);
     }
 
@@ -43,7 +43,7 @@ public class ScassandraFactory {
      * Creates a Scassandra instance with 8042 as the binary port and 8043 as the admin port.
      * @return Scassandra
      */
-    public static final Scassandra createServer() {
+    public static Scassandra createServer() {
         return new ScassandraRunner("localhost", 8042, "localhost", 8043);
     }
 }

@@ -23,6 +23,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.scassandra.http.client.ActivityClient;
 import org.scassandra.http.client.PrimingClient;
+import org.scassandra.server.ServerStubRunner;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
