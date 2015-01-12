@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -424,5 +425,27 @@ public class PreparedStatementMatcherTest {
 
         //then
         assertFalse(matched);
+    }
+
+    @Test
+    public void matchesDateWhenSentBackAsLong() throws Exception {
+        //given
+        Date date = new Date();
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(date.getTime())
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(date)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
+
+        //then
+        assertTrue(matched);
     }
 }

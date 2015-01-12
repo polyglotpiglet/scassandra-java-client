@@ -8,6 +8,7 @@ import org.scassandra.http.client.PreparedStatementExecution;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -104,7 +105,13 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
                 if (!actualVariable.equals(((InetAddress) expectedVariable).getHostAddress())) {
                     return false;
                 }
-            } else if (expectedVariable instanceof ByteBuffer) {
+            } else if (expectedVariable instanceof Date) {
+                Long expectedTime = ((Date) expectedVariable).getTime();
+                if (!expectedTime.equals(actualVariable)) {
+                    return false;
+                }
+            }
+            else if (expectedVariable instanceof ByteBuffer) {
                 ByteBuffer bb = (ByteBuffer) expectedVariable;
                 byte[] b = new byte[bb.remaining()];
                 bb.get(b);
