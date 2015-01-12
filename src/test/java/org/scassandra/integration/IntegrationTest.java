@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.scassandra;
+package org.scassandra.integration;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.*;
@@ -54,7 +54,7 @@ public class IntegrationTest {
 
         //then
         activityClient.clearConnections();
-        primingClient.primeQuery(pr);
+        primingClient.prime(pr);
     }
 
     @Test(expected = PrimeFailedException.class)
@@ -69,8 +69,8 @@ public class IntegrationTest {
                 .withConsistency(PrimingRequest.Consistency.ALL, PrimingRequest.Consistency.ONE)
                 .build();
         //when
-        primingClient.primeQuery(prWithAllAndAny);
-        primingClient.primeQuery(prWithAllAndONE);
+        primingClient.prime(prWithAllAndAny);
+        primingClient.prime(prWithAllAndONE);
 
         //then
     }
@@ -114,7 +114,7 @@ public class IntegrationTest {
                 .build();
 
         //when
-        primingClient.primePreparedStatement(prime);
+        primingClient.prime(prime);
         List<PrimingRequest> retrievedPrimes = primingClient.retrievePreparedPrimes();
         //then
         PrimingRequest expectedPrimeWithDefaults = PrimingRequest.preparedStatementBuilder()

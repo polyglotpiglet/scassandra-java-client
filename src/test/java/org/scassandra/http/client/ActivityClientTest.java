@@ -167,7 +167,8 @@ public class ActivityClientTest {
                 "[{\n" +
                         "  \"preparedStatementText\": \"select * from people where name = ?\",\n" +
                         "  \"consistency\": \"ONE\",\n" +
-                        "  \"variables\": [\"Chris\"]\n" +
+                        "  \"variables\": [\"Chris\"],\n" +
+                        "  \"variableTypes\": [\"text\"]\n" +
                         "}]"
                 )));
         //when
@@ -178,6 +179,7 @@ public class ActivityClientTest {
         assertEquals("ONE", singleExecution.getConsistency());
         assertEquals("select * from people where name = ?", singleExecution.getPreparedStatementText());
         assertEquals(Arrays.asList("Chris"), singleExecution.getVariables());
+        assertEquals(Arrays.asList(ColumnTypes.Text), singleExecution.getVariableTypes());
     }
 
     @Test(expected = ActivityRequestFailed.class)

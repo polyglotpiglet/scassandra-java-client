@@ -3,6 +3,7 @@ package org.scassandra.matchers;
 import org.apache.commons.codec.binary.Hex;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
+import org.scassandra.http.client.ColumnTypes;
 import org.scassandra.http.client.PreparedStatementExecution;
 
 import java.net.InetAddress;
@@ -51,79 +52,34 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
     actual variable to the expected variables type
      */
     private boolean doesPreparedStatementMatch(PreparedStatementExecution actualPreparedStatementExecution) {
+
+        List<ColumnTypes> variableTypes = actualPreparedStatementExecution.getVariableTypes();
+        List<Object> actualVariables = actualPreparedStatementExecution.getVariables();
+        if (variableTypes.size() != actualVariables.size()) {
+            throw new IllegalArgumentException(String.format("Server has returned a different number of variables to variable types: variables %s variableTypes %s", actualVariables, variableTypes));
+        }
+
+
+
         if (!actualPreparedStatementExecution.getConsistency().equals(expectedPreparedStatementExecution.getConsistency()))
             return false;
         if (!actualPreparedStatementExecution.getPreparedStatementText().equals(expectedPreparedStatementExecution.getPreparedStatementText()))
             return false;
         List<Object> expectedVariables = expectedPreparedStatementExecution.getVariables();
-        List<Object> actualVariables = actualPreparedStatementExecution.getVariables();
 
         if (expectedVariables.size() != actualVariables.size()) {
             return false;
         }
 
+
+
         for (int index = 0; index < expectedVariables.size(); index++) {
 
             Object expectedVariable = expectedVariables.get(index);
             Object actualVariable = actualVariables.get(index);
+            ColumnTypes columnType = variableTypes.get(index);
+            if (!columnType.equals(expectedVariable, actualVariable)) return false;
 
-            if (actualVariable instanceof Double && expectedVariable != null) {
-                Double castToDouble;
-                try {
-                    castToDouble = new Double(expectedVariable.toString());
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-                if (!castToDouble.equals(actualVariable)) {
-                    return false;
-                }
-            } else if (expectedVariable instanceof UUID && !(actualVariable instanceof UUID)) {
-                if (!expectedVariable.toString().equals(actualVariable)) {
-                    return false;
-                }
-            } else if (expectedVariable instanceof Double) {
-                Double castToDouble;
-                try {
-                    castToDouble = new Double(actualVariable.toString());
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-                if (!castToDouble.equals(expectedVariable)) {
-                    return false;
-                }
-            } else if (expectedVariable instanceof Float) {
-                Float castToFloat;
-                try {
-                    castToFloat = new Float(actualVariable.toString());
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-                if (!castToFloat.equals(expectedVariable)) {
-                    return false;
-                }
-            } else if (expectedVariable instanceof InetAddress) {
-                if (!actualVariable.equals(((InetAddress) expectedVariable).getHostAddress())) {
-                    return false;
-                }
-            } else if (expectedVariable instanceof Date) {
-                Long expectedTime = ((Date) expectedVariable).getTime();
-                if (!expectedTime.equals(actualVariable)) {
-                    return false;
-                }
-            }
-            else if (expectedVariable instanceof ByteBuffer) {
-                ByteBuffer bb = (ByteBuffer) expectedVariable;
-                byte[] b = new byte[bb.remaining()];
-                bb.get(b);
-                String encodedExpected = Hex.encodeHexString(b);
-                if (!encodedExpected.equals(actualVariable.toString().replaceFirst("0x", ""))) {
-                    return false;
-                }
-            } else {
-                if (!Objects.equals(expectedVariable, actualVariable)) {
-                    return false;
-                }
-            }
         }
         return true;
     }

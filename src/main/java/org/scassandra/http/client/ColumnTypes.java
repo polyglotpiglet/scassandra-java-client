@@ -17,19 +17,58 @@ package org.scassandra.http.client;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.math.BigInteger;
+
 public enum ColumnTypes {
 
     @SerializedName("ascii")
-    Ascii,
+    Ascii {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            if (expected == null) return actual == null;
+            return expected.equals(actual);
+        }
+    },
 
     @SerializedName("bigint")
-    Bigint,
+    Bigint {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+
+            if (expected == null) return actual == null;
+            if (actual == null) return expected == null;
+
+            if (expected instanceof Integer) {
+                return expected.equals(Integer.parseInt(actual.toString()));
+            } else if (expected instanceof Long) {
+                return expected.equals(Long.parseLong(actual.toString()));
+            } else if (expected instanceof BigInteger) {
+                return expected.equals(new BigInteger(actual.toString()));
+            } else if (expected instanceof String) {
+                return compareStringInteger(expected, actual, this);
+            } else {
+                throw throwInvalidType(expected, actual, this);
+            }
+        }
+
+    },
 
     @SerializedName("blob")
     Blob,
 
     @SerializedName("boolean")
-    Boolean,
+    Boolean {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            if (expected == null) throw throwNullError(actual, this);
+
+            if (expected instanceof Boolean) {
+                return expected.equals(actual);
+            } else {
+                throw throwInvalidType(expected, actual, this);
+            }
+        }
+    },
 
     @SerializedName("counter")
     Counter,
@@ -44,7 +83,26 @@ public enum ColumnTypes {
     Float,
 
     @SerializedName("int")
-    Int,
+    Int {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+
+            if (expected == null) return actual == null;
+            if (actual == null) return expected == null;
+
+            if (expected instanceof Integer) {
+                return expected.equals(Integer.parseInt(actual.toString()));
+            } else if (expected instanceof String) {
+                try {
+                    return Integer.valueOf((String) expected).equals(Integer.parseInt(actual.toString()));
+                } catch (NumberFormatException e) {
+                    throw throwInvalidType(expected, actual, this);
+                }
+            } else {
+                throw throwInvalidType(expected, actual, this);
+            }
+        }
+    },
 
     @SerializedName("timestamp")
     Timestamp,
@@ -53,10 +111,30 @@ public enum ColumnTypes {
     Uuid,
 
     @SerializedName("varchar")
-    Varchar,
+    Varchar {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return Ascii.equals(expected, actual);
+        }
+    },
 
     @SerializedName("varint")
-    Varint,
+    Varint {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            if (expected == null) return actual == null;
+            if (actual == null) return expected == null;
+
+
+            if (expected instanceof BigInteger) {
+                return expected.equals(new BigInteger(actual.toString()));
+            } else if (expected instanceof String) {
+                return compareStringInteger(expected, actual, this);
+            } else {
+                throw throwInvalidType(expected, actual, this);
+            }
+        }
+    },
 
     @SerializedName("timeuuid")
     Timeuuid,
@@ -65,7 +143,12 @@ public enum ColumnTypes {
     Inet,
 
     @SerializedName("text")
-    Text,
+    Text {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return Ascii.equals(expected, actual);
+        }
+    },
 
     @SerializedName("set<varchar>")
     VarcharSet,
@@ -182,7 +265,34 @@ public enum ColumnTypes {
     AsciiTextMap,
 
     @SerializedName("map<ascii,ascii>")
-    AsciiAsciiMap
-    ;
+    AsciiAsciiMap;
 
+    public boolean equals(Object expected, Object actual) {
+        return false;
+    }
+
+    private static IllegalArgumentException throwInvalidType(Object expected, Object actual, ColumnTypes instance) {
+        return new IllegalArgumentException(String.format("Invalid expected value (%s,%s) for variable of types %s, the value was %s for valid types see: %s",
+                expected,
+                expected.getClass().getSimpleName(),
+                instance.name(),
+                actual,
+                "http://www.scassandra.org/java-client/column-types/"
+        ));
+    }
+    private static IllegalArgumentException throwNullError(Object actual, ColumnTypes instance) {
+        return new IllegalArgumentException(String.format("Invalid expected value (null) for variable of types %s, the value was %s for valid types see: %s",
+                instance.name(),
+                actual,
+                "http://www.scassandra.org/java-client/column-types/"
+        ));
+    }
+
+    private static boolean compareStringInteger(Object expected, Object actual, ColumnTypes instance) {
+        try {
+            return new BigInteger((String) expected).equals(new BigInteger(actual.toString()));
+        } catch (NumberFormatException e) {
+            throw throwInvalidType(expected, actual, instance);
+        }
+    }
 }

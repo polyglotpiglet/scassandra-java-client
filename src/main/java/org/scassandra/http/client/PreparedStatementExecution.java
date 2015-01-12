@@ -23,11 +23,13 @@ public final class PreparedStatementExecution {
     private final String preparedStatementText;
     private final String consistency;
     private final List<Object> variables;
+    private List<ColumnTypes> variableTypes;
 
-    private PreparedStatementExecution(String preparedStatementText, String consistency, List<Object> variables) {
+    private PreparedStatementExecution(String preparedStatementText, String consistency, List<Object> variables, List<ColumnTypes> variableTypes) {
         this.preparedStatementText = preparedStatementText;
         this.consistency = consistency;
         this.variables = variables;
+        this.variableTypes = variableTypes;
     }
 
     public String getPreparedStatementText() {
@@ -48,6 +50,7 @@ public final class PreparedStatementExecution {
                 "preparedStatementText='" + preparedStatementText + '\'' +
                 ", consistency='" + consistency + '\'' +
                 ", variables=" + variables +
+                ", variableTypes=" + variableTypes +
                 '}';
     }
 
@@ -78,30 +81,61 @@ public final class PreparedStatementExecution {
         return new PreparedStatementExecutionBuilder();
     }
 
+    /**
+     * Don't use this builder for creating PreparedStatementExecutions to match against.
+     *
+     * @param variableTypes The types of the varialbes
+     * @return A PreparedStatementExecutionBuilder
+     */
+    public static PreparedStatementExecutionBuilder builder(List<ColumnTypes> variableTypes) {
+        return new PreparedStatementExecutionBuilder(variableTypes);
+    }
+
+    /**
+     * Don't use this builder for creating PreparedStatementExecutions to match against.
+     *
+     * @param variableTypes The types of the varialbes
+     * @return A PreparedStatementExecutionBuilder
+     */
+    public static PreparedStatementExecutionBuilder builder(ColumnTypes... variableTypes) {
+        return new PreparedStatementExecutionBuilder(Arrays.asList(variableTypes));
+    }
+
+    public List<ColumnTypes> getVariableTypes() {
+        return variableTypes;
+    }
+
     public static class PreparedStatementExecutionBuilder {
 
+        private List<ColumnTypes> variableTypes = Collections.emptyList();
         private String preparedStatementText;
         private String consistency = "ONE";
         private List<Object> variables = Collections.emptyList();
 
-        private PreparedStatementExecutionBuilder() {}
+        private PreparedStatementExecutionBuilder() {
+        }
+
+        public PreparedStatementExecutionBuilder(List<ColumnTypes> variableTypes) {
+            this.variableTypes = variableTypes;
+        }
 
         /**
          * Defaults to ONE if not set.
+         *
          * @param consistency Query consistency
          * @return this builder
          */
-        public PreparedStatementExecutionBuilder withConsistency(String consistency){
+        public PreparedStatementExecutionBuilder withConsistency(String consistency) {
             this.consistency = consistency;
             return this;
         }
 
-        public PreparedStatementExecutionBuilder withPreparedStatementText(String preparedStatementText){
+        public PreparedStatementExecutionBuilder withPreparedStatementText(String preparedStatementText) {
             this.preparedStatementText = preparedStatementText;
             return this;
         }
 
-        public PreparedStatementExecutionBuilder withVariables(Object... variables){
+        public PreparedStatementExecutionBuilder withVariables(Object... variables) {
             this.variables = Arrays.asList(variables);
             return this;
         }
@@ -115,7 +149,7 @@ public final class PreparedStatementExecution {
             if (preparedStatementText == null) {
                 throw new IllegalStateException("Must set PreparedStatementExecutionBuilder");
             }
-            return new PreparedStatementExecution(this.preparedStatementText, this.consistency, this.variables);
+            return new PreparedStatementExecution(this.preparedStatementText, this.consistency, this.variables, this.variableTypes);
         }
     }
 }
