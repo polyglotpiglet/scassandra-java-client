@@ -129,51 +129,6 @@ task wrapper(type: Wrapper) {
     gradleVersion = '1.11'
 }
 
-//
-//task jarAll(type: Jar, dependsOn: jar) {
-//    inputs.files jar.archivePath
-//    appendix = 'standalone'
-//    def metaInfDir = "$buildDir/tmp/manifest"
-//    def jar = project.tasks.jar
-//    String fileName = jar.archiveName - ("." + jar.extension) + "-standalone." + jar.extension
-//    File jarFile = new File(jar.destinationDir, fileName)
-//    doFirst {
-//        manifest.writeTo("${metaInfDir}/MANIFEST.MF")
-//        project.ant {
-//            taskdef name: "jarjar", classname: "com.tonicsystems.jarjar.JarJarTask", classpath: configurations.testCompile.asPath
-//            jarjar(jarfile: jarFile, manifest: "${metaInfDir}/MANIFEST.MF") {
-//                zipfileset(src: jar.archivePath)
-//
-//                configurations.compile.files.findAll { !it.name.contains("junit") }.each {
-//                    zipfileset(src: it)
-//                }
-//                rule pattern: "org.mortbay.**", result: "scassandra.org.mortbay.@1"
-//                rule pattern: "com.google.common.**", result: "scassandra.com.google.common.@1"
-//                rule pattern: "com.fasterxml.jackson.**", result: "scassandra.com.fasterxml.jackson.@1"
-//                rule pattern: "org.apache.http.**", result: "scassandra.org.apache.http.@1"
-//                rule pattern: "org.apache.commons.**", result: "scassandra.org.apache.commons.@1"
-//                rule pattern: "com.google.code.gson.**", result: "scassandra.com.google.code.gson.@1"
-//                rule pattern: "org.apache.cassandra.**", result: "scassandra.org.apache.cassandra.@1"
-//                rule pattern: "org.scassandra.server.**", result: "scassandra.org.scassandra.server.@1"
-//            }
-//        }
-//
-//        Date date = new Date()
-//        String name = jar.baseName
-//        project.artifacts.add('archives',
-//                [
-//                        getClassifier: { -> "standalone" },
-//                        getDate: {-> date },
-//                        getExtension: {-> "jar" },
-//                        getType: {-> "jar" },
-//                        getFile: {-> jarFile },
-//                        getName: {-> name }
-//                ] as PublishArtifact
-//        )
-//    }
-//}
-
-
 shadowJar {
     append('reference.conf')
     relocate 'org.apache.cassandra', 'scassandra.org.apache.cassandra'
@@ -207,10 +162,6 @@ shadowJar {
 
     }
 }
-
-//
-//install.dependsOn jarAll
-//uploadArchives.dependsOn jarAll
 
 install.dependsOn shadowJar
 uploadArchives.dependsOn shadowJar
