@@ -16,8 +16,14 @@
 package org.scassandra.http.client;
 
 import com.google.gson.annotations.SerializedName;
+import org.apache.commons.codec.binary.Hex;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.nio.ByteBuffer;
+import java.util.Date;
+import java.util.UUID;
 
 public enum ColumnTypes {
 
@@ -34,27 +40,30 @@ public enum ColumnTypes {
     Bigint {
         @Override
         public boolean equals(Object expected, Object actual) {
-
-            if (expected == null) return actual == null;
-            if (actual == null) return expected == null;
-
-            if (expected instanceof Integer) {
-                return expected.equals(Integer.parseInt(actual.toString()));
-            } else if (expected instanceof Long) {
-                return expected.equals(Long.parseLong(actual.toString()));
-            } else if (expected instanceof BigInteger) {
-                return expected.equals(new BigInteger(actual.toString()));
-            } else if (expected instanceof String) {
-                return compareStringInteger(expected, actual, this);
+            return equalsForLongType(expected, actual, this);
+        }
+    },
+    @SerializedName("blob")
+    Blob {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            if (expected == null) {
+                throw throwNullError(actual, this);
+            }
+            if (expected instanceof String) {
+                return expected.equals(actual);
+            } else if (expected instanceof ByteBuffer) {
+                ByteBuffer bb = (ByteBuffer) expected;
+                byte[] b = new byte[bb.remaining()];
+                bb.get(b);
+                String encodedExpected = Hex.encodeHexString(b);
+                String actualWithout0x = actual.toString().replaceFirst("0x", "");
+                return encodedExpected.equals(actualWithout0x);
             } else {
                 throw throwInvalidType(expected, actual, this);
             }
         }
-
     },
-
-    @SerializedName("blob")
-    Blob,
 
     @SerializedName("boolean")
     Boolean {
@@ -71,44 +80,69 @@ public enum ColumnTypes {
     },
 
     @SerializedName("counter")
-    Counter,
+    Counter {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return equalsForLongType(expected, actual, this);
+        }
+    },
 
     @SerializedName("decimal")
-    Decimal,
+    Decimal {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return equalsDecimalType(expected, actual, this);
+
+        }
+    },
 
     @SerializedName("double")
-    Double,
+    Double {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return equalsDecimalType(expected, actual, this);
+
+        }
+    },
 
     @SerializedName("float")
-    Float,
+    Float {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return equalsDecimalType(expected, actual, this);
+
+        }
+    },
 
     @SerializedName("int")
     Int {
         @Override
         public boolean equals(Object expected, Object actual) {
-
-            if (expected == null) return actual == null;
-            if (actual == null) return expected == null;
-
-            if (expected instanceof Integer) {
-                return expected.equals(Integer.parseInt(actual.toString()));
-            } else if (expected instanceof String) {
-                try {
-                    return Integer.valueOf((String) expected).equals(Integer.parseInt(actual.toString()));
-                } catch (NumberFormatException e) {
-                    throw throwInvalidType(expected, actual, this);
-                }
-            } else {
-                throw throwInvalidType(expected, actual, this);
-            }
+            return equalsForLongType(expected, actual, this);
         }
     },
 
     @SerializedName("timestamp")
-    Timestamp,
+    Timestamp {
+        // Gson converts JsNumbers to Doubles :(
 
-    @SerializedName("uuid")
-    Uuid,
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            Long typedActualValue = ((Double) actual).longValue();
+
+            if (expected == null) return actual == null;
+            if (actual == null) return expected == null;
+
+            if (expected instanceof Long) {
+                return expected.equals(typedActualValue);
+            } else if (expected instanceof Date) {
+                return ((Date) expected).getTime() == typedActualValue;
+            }
+
+            throw throwInvalidType(expected, actual, this);
+
+        }
+    },
 
     @SerializedName("varchar")
     Varchar {
@@ -125,11 +159,16 @@ public enum ColumnTypes {
             if (expected == null) return actual == null;
             if (actual == null) return expected == null;
 
+            Long typedActual = ((Double) actual).longValue();
 
             if (expected instanceof BigInteger) {
-                return expected.equals(new BigInteger(actual.toString()));
+                return expected.equals(new BigInteger(typedActual.toString()));
             } else if (expected instanceof String) {
-                return compareStringInteger(expected, actual, this);
+                try {
+                    return new BigInteger((String) expected).equals(new BigInteger(typedActual.toString()));
+                } catch (NumberFormatException e) {
+                    throw throwInvalidType(expected, actual, this);
+                }
             } else {
                 throw throwInvalidType(expected, actual, this);
             }
@@ -137,10 +176,46 @@ public enum ColumnTypes {
     },
 
     @SerializedName("timeuuid")
-    Timeuuid,
+    Timeuuid {
+        // comes back from the server as a string
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return equalsForUUID(expected, actual, this);
+        }
+
+    },
+
+    @SerializedName("uuid")
+    Uuid {
+        // comes back from the server as a string
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return equalsForUUID(expected, actual, this);
+        }
+
+    },
 
     @SerializedName("inet")
-    Inet,
+    Inet {
+        // comes from the server as a string
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            if (expected == null) return actual == null;
+            if (actual == null) return expected == null;
+            
+            if (expected instanceof String) {
+                try {
+                    return expected.equals(actual);
+                } catch (Exception e) {
+                    throw throwInvalidType(expected, actual, this);
+                }
+            } else if (expected instanceof InetAddress) {
+                return ((InetAddress) expected).getHostAddress().equals(actual);
+            }
+            
+            throw throwInvalidType(expected, actual, this);
+        }
+    },
 
     @SerializedName("text")
     Text {
@@ -280,6 +355,7 @@ public enum ColumnTypes {
                 "http://www.scassandra.org/java-client/column-types/"
         ));
     }
+
     private static IllegalArgumentException throwNullError(Object actual, ColumnTypes instance) {
         return new IllegalArgumentException(String.format("Invalid expected value (null) for variable of types %s, the value was %s for valid types see: %s",
                 instance.name(),
@@ -288,11 +364,69 @@ public enum ColumnTypes {
         ));
     }
 
-    private static boolean compareStringInteger(Object expected, Object actual, ColumnTypes instance) {
+    private static boolean compareStringInteger(Object expected, Long actual, ColumnTypes instance) {
         try {
             return new BigInteger((String) expected).equals(new BigInteger(actual.toString()));
         } catch (NumberFormatException e) {
             throw throwInvalidType(expected, actual, instance);
+        }
+    }
+
+
+    private static boolean equalsForLongType(Object expected, Object actual, ColumnTypes columnTypes) {
+
+        if (expected == null) return actual == null;
+        if (actual == null) return expected == null;
+
+        Long typedActual = ((Double) actual).longValue();
+
+        if (expected instanceof Integer) {
+            return ((Integer) expected).longValue() == typedActual;
+        } else if (expected instanceof Long) {
+            return expected == typedActual;
+        } else if (expected instanceof BigInteger) {
+            return expected.equals(new BigInteger(typedActual.toString()));
+        } else if (expected instanceof String) {
+            return compareStringInteger(expected, typedActual, columnTypes);
+        } else {
+            throw throwInvalidType(expected, actual, columnTypes);
+        }
+    }
+
+    private static boolean equalsDecimalType(Object expected, Object actual, ColumnTypes columnTypes) {
+        if (expected == null) {
+            throw throwNullError(actual, columnTypes);
+        } else if (actual == null) {
+            return false;
+        }
+
+        if (expected instanceof String) {
+            try {
+                return (new BigDecimal(expected.toString()).compareTo(new BigDecimal(actual.toString())) == 0);
+            } catch (NumberFormatException e) {
+                throw throwInvalidType(expected, actual, columnTypes);
+            }
+        } else if (expected instanceof BigDecimal) {
+            return ((BigDecimal) expected).compareTo(new BigDecimal(actual.toString())) == 0;
+        } else {
+            throw throwInvalidType(expected, actual, columnTypes);
+        }
+    }
+
+    private static boolean equalsForUUID(Object expected, Object actual, ColumnTypes columnTypes) {
+        if (expected == null) return actual == null;
+        if (actual == null) return expected == null;
+
+        if (expected instanceof String) {
+            try {
+                return UUID.fromString(expected.toString()).equals(UUID.fromString(actual.toString()));
+            } catch (Exception e) {
+                throw throwInvalidType(expected, actual, columnTypes);
+            }
+        } else if (expected instanceof UUID) {
+            return expected.toString().equals(actual);
+        } else {
+            throw throwInvalidType(expected, actual, columnTypes);
         }
     }
 }

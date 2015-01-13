@@ -4,8 +4,10 @@ import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.scassandra.http.client.ColumnTypes;
 import org.scassandra.http.client.PreparedStatementExecution;
+import scala.math.BigInt;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -120,11 +122,11 @@ public class PreparedStatementMatcherTest {
         //given
         PreparedStatementExecution actualExecution = PreparedStatementExecution.builder(Bigint, Int, Varint, Int)
                 .withPreparedStatementText("same query")
-                .withVariables(new Byte("1"), new Short("2"), 3, 4L)
+                .withVariables(1d, 2d, 3d, 4d)
                 .build();
         PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
-                .withVariables(new Byte("1"), new Short("2"), 3, 4L)
+                .withVariables("1", 2, new BigInteger("3"), "4")
                 .build();
 
         PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
@@ -137,15 +139,15 @@ public class PreparedStatementMatcherTest {
     }
 
     @Test
-    public void numbersMatchingDoubles() throws Exception {
+    public void matchingNonDecimalTypes() throws Exception {
         //given
         PreparedStatementExecution actualExecution = PreparedStatementExecution.builder(ColumnTypes.Bigint, Counter, Int, Varint)
                 .withPreparedStatementText("same query")
-                .withVariables(new Byte("1"), new Short("2"), 3, 4L)
+                .withVariables(1d, 2d, 3d, 4d)
                 .build();
         PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
-                .withVariables(1.0, 2.0, 3.0, 4.0)
+                .withVariables(1, 2, 3, "4")
                 .build();
 
         PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
@@ -162,11 +164,11 @@ public class PreparedStatementMatcherTest {
         //given
         PreparedStatementExecution actualExecution = PreparedStatementExecution.builder(Float, Float, Float, Float)
                 .withPreparedStatementText("same query")
-                .withVariables(new Byte("1"), new Short("2"), 3, 4L)
+                .withVariables("1", "2", "3.44", "4.4440")
                 .build();
         PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
-                .withVariables(1.0f, 2.0f, 3.0f, 4.0f)
+                .withVariables("1", "2", "3.440000", "4.4440")
                 .build();
 
         PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
@@ -247,34 +249,12 @@ public class PreparedStatementMatcherTest {
     }
 
     @Test
-    public void decimalMatchingAsDouble() throws Exception {
-        //given
-        BigDecimal decimal = new BigDecimal(90);
-        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder(Decimal)
-                .withPreparedStatementText("same query")
-                .withVariables(90.0)
-                .build();
-        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
-                .withPreparedStatementText("same query")
-                .withVariables(decimal)
-                .build();
-
-        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
-
-        //when
-        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution));
-
-        //then
-        assertTrue(matched);
-    }
-
-    @Test
     public void decimalMatchingAsBigDecimal() throws Exception {
         //given
         BigDecimal decimal = new BigDecimal(90);
         PreparedStatementExecution actualExecution = PreparedStatementExecution.builder(Decimal)
                 .withPreparedStatementText("same query")
-                .withVariables(decimal)
+                .withVariables("90")
                 .build();
         PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
@@ -297,7 +277,7 @@ public class PreparedStatementMatcherTest {
         UUID theSame = UUID.fromString(uuid.toString());
         PreparedStatementExecution actual = PreparedStatementExecution.builder(Uuid)
                 .withPreparedStatementText("same query")
-                .withVariables(theSame)
+                .withVariables(theSame.toString())
                 .build();
         PreparedStatementExecution expected = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
@@ -428,7 +408,7 @@ public class PreparedStatementMatcherTest {
         Date date = new Date();
         PreparedStatementExecution actualExecution = PreparedStatementExecution.builder(Timestamp)
                 .withPreparedStatementText("same query")
-                .withVariables(date.getTime())
+                .withVariables((double) date.getTime())
                 .build();
         PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")

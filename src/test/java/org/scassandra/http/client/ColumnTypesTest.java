@@ -1,13 +1,18 @@
 package org.scassandra.http.client;
 
+import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -24,7 +29,7 @@ public class ColumnTypesTest {
     }
 
     @Parameterized.Parameters(name = "Type: {0} expected: {1}, actual {2}, should be equal: {3}")
-    public static Collection<Object[]> data() {
+    public static Collection<Object[]> data() throws UnknownHostException {
         return Arrays.asList(new Object[][]{
                 {Ascii, "one", "one", MATCH},
                 {Ascii, "one", "two", NO_MATCH},
@@ -43,42 +48,45 @@ public class ColumnTypesTest {
                 {Varchar, "one", null, NO_MATCH},
                 {Varchar, null, "two", NO_MATCH},
 
-                {Bigint, 1, 1, MATCH},
-                {Bigint, 1l, 1l, MATCH},
-                {Bigint, 1l, "1", MATCH},
-                {Bigint, "1", "1", MATCH},
-                {Bigint, new BigInteger("1"), new BigInteger("1"), MATCH},
-                {Bigint, new BigInteger("1"), 1, MATCH},
+                {Bigint, 1, 1d, MATCH},
+                {Bigint, 1l, 1d, MATCH},
+//                {Bigint, 1l, "1", MATCH},
+//                {Bigint, "1", "1", MATCH},
+                {Bigint, new BigInteger("1"), 1d, MATCH},
+//                {Bigint, new BigInteger("1"), 1, MATCH},
 
-                {Bigint, new BigInteger("1"), null, NO_MATCH},
-                {Bigint, null, new BigInteger("1"), NO_MATCH},
-                {Bigint, "hello", new BigInteger("1"), ILLEGAL_ARGUMENT},
-                {Bigint, "hello", 1, ILLEGAL_ARGUMENT},
+                {Bigint, null, 1d, NO_MATCH},
+                {Bigint, "hello", 1d, ILLEGAL_ARGUMENT},
+                
+                {Counter, 1, 1d, MATCH},
+                {Counter, 1l, 1d, MATCH},
+//                {Counter, 1l, "1", MATCH},
+//                {Counter, "1", "1", MATCH},
+                {Counter, new BigInteger("1"), 1d, MATCH},
+//                {Counter, new BigInteger("1"), 1, MATCH},
 
-                {Int, 1, 1, MATCH},
-                {Int, "1", "1", MATCH},
-                {Int, "1", 1, MATCH},
-                {Int, 1, "1", MATCH},
+                {Counter, new BigInteger("1"), null, NO_MATCH},
+                {Counter, null, new BigInteger("1"), NO_MATCH},
+                {Counter, "hello", 1d, ILLEGAL_ARGUMENT},
 
-                {Int, 1, null, NO_MATCH},
+                {Int, 1, 1d, MATCH},
+                {Int, "1", 1d, MATCH},
+                {Int, new BigInteger("1"), 1d, MATCH},
+//                {Int, "1", 1, MATCH},
+//                {Int, 1, "1", MATCH},
+
                 {Int, null, 1, NO_MATCH},
-                {Int, new BigInteger("1"), 1, ILLEGAL_ARGUMENT},
-                {Int, 1l, 1, ILLEGAL_ARGUMENT},
-                {Int, "hello", new BigInteger("1"), ILLEGAL_ARGUMENT},
-                {Int, "hello", 1, ILLEGAL_ARGUMENT},
+                {Int, "hello", 1d, ILLEGAL_ARGUMENT},
 
-                {Varint, "1", "1", MATCH},
-                {Varint, new BigInteger("1"), new BigInteger("1"), MATCH},
-                {Varint, new BigInteger("1"), 1, MATCH},
-                {Varint, "1", 1, MATCH},
+                {Varint, "1", 1d, MATCH},
+                {Varint, new BigInteger("1"), 1d, MATCH},
 
                 {Varint, "1", null, NO_MATCH},
-                {Varint, null, "1", NO_MATCH},
-                {Varint, 1, "1", ILLEGAL_ARGUMENT},
-                {Varint, 1, 1, ILLEGAL_ARGUMENT},
-                {Varint, 1l, 1, ILLEGAL_ARGUMENT},
-                {Varint, "hello", new BigInteger("1"), ILLEGAL_ARGUMENT},
-                {Varint, "hello", 1, ILLEGAL_ARGUMENT},
+                {Varint, null, 1d, NO_MATCH},
+                {Varint, 1, 1d, ILLEGAL_ARGUMENT},
+                {Varint, 1, 1d, ILLEGAL_ARGUMENT},
+                {Varint, 1l, 1d, ILLEGAL_ARGUMENT},
+                {Varint, "hello", 1d, ILLEGAL_ARGUMENT},
 
                 {Boolean, true, true, MATCH},
                 {Boolean, false, false, MATCH},
@@ -89,6 +97,110 @@ public class ColumnTypesTest {
                 {Boolean, 1, false, ILLEGAL_ARGUMENT},
                 {Boolean, "true", false, ILLEGAL_ARGUMENT},
                 {Boolean, new BigDecimal("1.2"), false, ILLEGAL_ARGUMENT},
+
+                {Blob, "0x0012345435345345435435", "0x0012345435345345435435", MATCH},
+                {Blob, ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}), "0x" + Hex.encodeHexString(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}), MATCH},
+
+                {Blob, ByteBuffer.wrap(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}), "0x" + Hex.encodeHexString(new byte[]{1, 2, 3, 4, 5, 6, 7, 8}), NO_MATCH},
+                {Blob, "0x0012345435345345435435", "0x0012345435345345435433", NO_MATCH},
+                {Blob, 1, "0x0012345435345345435435", ILLEGAL_ARGUMENT},
+                {Blob, new BigInteger("1"), "0x0012345435345345435435", ILLEGAL_ARGUMENT},
+                {Blob, new BigDecimal("1"), "0x0012345435345345435435", ILLEGAL_ARGUMENT},
+                {Blob, null, "0x0012345435345345435433", ILLEGAL_ARGUMENT},
+
+                {Decimal, "1", "1", MATCH},
+                {Decimal, "1.0000", "1", MATCH},
+                {Decimal, new BigDecimal("1.0000"), "1", MATCH},
+
+                {Decimal, "1", null, NO_MATCH},
+                {Decimal, "1", "2", NO_MATCH},
+                {Decimal, new BigInteger("1"), "1.234", ILLEGAL_ARGUMENT},
+                {Decimal, null, "1", ILLEGAL_ARGUMENT},
+                {Decimal, 1, "1", ILLEGAL_ARGUMENT},
+                {Decimal, 1, 1, ILLEGAL_ARGUMENT},
+                {Decimal, 1l, 1, ILLEGAL_ARGUMENT},
+                {Decimal, "hello", new BigInteger("1"), ILLEGAL_ARGUMENT},
+                {Decimal, "hello", 1, ILLEGAL_ARGUMENT},
+                
+                {Float, "1", "1", MATCH},
+                {Float, "1.0000", "1", MATCH},
+
+                {Float, "1", null, NO_MATCH},
+                {Float, "1", "2", NO_MATCH},
+                {Float, new BigInteger("1"), "1.234", ILLEGAL_ARGUMENT},
+                {Float, null, "1", ILLEGAL_ARGUMENT},
+                {Float, 1, "1", ILLEGAL_ARGUMENT},
+                {Float, 1, 1, ILLEGAL_ARGUMENT},
+                {Float, 1l, 1, ILLEGAL_ARGUMENT},
+                {Float, "hello", new BigInteger("1"), ILLEGAL_ARGUMENT},
+                {Float, "hello", 1, ILLEGAL_ARGUMENT},
+                
+                {Double, "1", "1", MATCH},
+                {Double, "1.0000", "1", MATCH},
+
+                {Double, "1", null, NO_MATCH},
+                {Double, "1", "2", NO_MATCH},
+                {Double, new BigInteger("1"), "1.234", ILLEGAL_ARGUMENT},
+                {Double, null, "1", ILLEGAL_ARGUMENT},
+                {Double, 1, "1", ILLEGAL_ARGUMENT},
+                {Double, 1, 1, ILLEGAL_ARGUMENT},
+                {Double, 1l, 1, ILLEGAL_ARGUMENT},
+                {Double, "hello", new BigInteger("1"), ILLEGAL_ARGUMENT},
+                {Double, "hello", 1, ILLEGAL_ARGUMENT},
+
+                {Timestamp, 1l, 1d, MATCH},
+                {Timestamp, new Date(1l), 1d, MATCH},
+                {Timestamp, null, 1d, NO_MATCH},
+
+                {Timestamp, 1l, 12d, NO_MATCH},
+                {Timestamp, 1, 1d, ILLEGAL_ARGUMENT},
+                {Timestamp, "1", 1d, ILLEGAL_ARGUMENT},
+                {Timestamp, new BigInteger("1"), 1d, ILLEGAL_ARGUMENT},
+                {Timestamp, "hello", 1d, ILLEGAL_ARGUMENT},
+
+                {Timeuuid, "59ad61d0-c540-11e2-881e-b9e6057626c4", "59ad61d0-c540-11e2-881e-b9e6057626c4", MATCH},
+                {Timeuuid, UUID.fromString("59ad61d0-c540-11e2-881e-b9e6057626c4"), "59ad61d0-c540-11e2-881e-b9e6057626c4", MATCH},
+
+                {Timeuuid, UUID.randomUUID(), "59ad61d0-c540-11e2-881e-b9e6057626c4", NO_MATCH},
+                {Timeuuid, UUID.randomUUID().toString(), "59ad61d0-c540-11e2-881e-b9e6057626c4", NO_MATCH},
+                {Timeuuid, null, "59ad61d0-c540-11e2-881e-b9e6057626c4", NO_MATCH},
+                {Timeuuid, "59ad61d0-c540-11e2-881e-b9e6057626c4", null,  NO_MATCH},
+
+                {Timeuuid, new Date(1l),  "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Timeuuid, 1l, "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Timeuuid, 1, "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Timeuuid, "1", "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Timeuuid, new BigInteger("1"), "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Timeuuid, "hello", "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                
+                {Uuid, "59ad61d0-c540-11e2-881e-b9e6057626c4", "59ad61d0-c540-11e2-881e-b9e6057626c4", MATCH},
+                {Uuid, UUID.fromString("59ad61d0-c540-11e2-881e-b9e6057626c4"), "59ad61d0-c540-11e2-881e-b9e6057626c4", MATCH},
+
+                {Uuid, UUID.randomUUID(), "59ad61d0-c540-11e2-881e-b9e6057626c4", NO_MATCH},
+                {Uuid, UUID.randomUUID().toString(), "59ad61d0-c540-11e2-881e-b9e6057626c4", NO_MATCH},
+                {Uuid, null, "59ad61d0-c540-11e2-881e-b9e6057626c4", NO_MATCH},
+                {Uuid, "59ad61d0-c540-11e2-881e-b9e6057626c4", null,  NO_MATCH},
+
+                {Uuid, new Date(1l),  "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Uuid, 1l, "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Uuid, 1, "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Uuid, "1", "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Uuid, new BigInteger("1"), "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+                {Uuid, "hello", "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
+
+                {Inet, InetAddress.getLocalHost(), InetAddress.getLocalHost().getHostAddress(), MATCH},
+                {Inet, InetAddress.getLocalHost().getHostAddress(), InetAddress.getLocalHost().getHostAddress(), MATCH},
+                
+                {Inet, InetAddress.getLocalHost(), "192.168.56.56", NO_MATCH},
+                {Inet, InetAddress.getLocalHost().getHostAddress(), "192.168.56.56", NO_MATCH},
+
+                {Inet, null, InetAddress.getLocalHost().getHostAddress(), NO_MATCH},
+                {Inet, InetAddress.getLocalHost().getHostAddress(), null,  NO_MATCH},
+
+                {Inet, new Date(1l),  InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
+                {Inet, 1l, InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
+                {Inet, 1, InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
+                {Inet, new BigInteger("1"), InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
         });
     }
 
@@ -117,8 +229,8 @@ public class ColumnTypesTest {
             }
             case ILLEGAL_ARGUMENT : {
                 try {
-                    type.equals(expected, actual);
-                    fail("Expected Illegal Argument Exception");
+                    boolean equals = type.equals(expected, actual);
+                    fail("Expected Illegal Argument Exception, actual: " + equals);
                 } catch (IllegalArgumentException e) {
                     assertTrue(e.getMessage().contains(type.name()));
                 }
