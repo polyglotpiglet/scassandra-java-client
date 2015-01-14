@@ -15,6 +15,8 @@
  */
 package org.scassandra.http.client;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.codec.binary.Hex;
 
@@ -23,6 +25,8 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public enum ColumnTypes {
@@ -226,49 +230,140 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<varchar>")
-    VarcharSet,
+    VarcharSet {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Varchar);
+        }
+    },
+    
 
     @SerializedName("set<ascii>")
-    AsciiSet,
+    AsciiSet {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Ascii);
+        }
+    },
 
     @SerializedName("set<text>")
-    TextSet,
+    TextSet {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Text);
+        }
+    },
 
     @SerializedName("set<bigint>")
-    BigintSet,
+    BigintSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Bigint);
+        }
+    },
 
     @SerializedName("set<blob>")
-    BlobSet,
+    BlobSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Blob);
+        }
+    },
 
     @SerializedName("set<boolean>")
-    BooleanSet,
+    BooleanSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Boolean);
+        }
+    },
 
     @SerializedName("set<decimal>")
-    DecimalSet,
+    DecimalSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Decimal);
+        }
+    },
 
     @SerializedName("set<double>")
-    DoubleSet,
+    DoubleSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Double);
+        }
+    },
 
     @SerializedName("set<float>")
-    FloatSet,
+    FloatSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Float);
+        }
+    },
 
     @SerializedName("set<inet>")
-    InetSet,
+    InetSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Inet);
+        }
+    },
 
     @SerializedName("set<int>")
-    IntSet,
+    IntSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Int);
+        }
+    },
 
     @SerializedName("set<timestamp>")
-    TimestampSet,
+    TimestampSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Timestamp);
+        }
+    },
 
     @SerializedName("set<timeuuid>")
-    TimeuuidSet,
+    TimeuuidSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Timeuuid);
+        }
+    },
 
     @SerializedName("set<uuid>")
-    UuidSet,
+    UuidSet {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Uuid);
+        }
+    },
 
     @SerializedName("set<varint>")
-    VarintSet,
+    VarintSet  {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareSet(expected, actual, this, Varint);
+        }
+    },
 
     @SerializedName("list<varchar>")
     VarcharList,
@@ -425,6 +520,33 @@ public enum ColumnTypes {
             }
         } else if (expected instanceof UUID) {
             return expected.toString().equals(actual);
+        } else {
+            throw throwInvalidType(expected, actual, columnTypes);
+        }
+    }
+
+    private static boolean compareSet(Object expected, Object actual, ColumnTypes columnTypes, final ColumnTypes setType) {
+        if (expected == null) return actual == null;
+        if (actual == null) return expected == null;
+
+        if (expected instanceof Set) {
+            final Set<?> typedExpected = (Set<?>) expected;
+            final List<?> actualList = (List<?>) actual;
+
+            if (typedExpected.size() != actualList.size()) return false;
+
+            return Iterables.all(typedExpected, new Predicate<Object>() {
+                @Override
+                public boolean apply(final Object eachExpected) {
+                    return Iterables.any(actualList, new Predicate<Object>() {
+                        @Override
+                        public boolean apply(Object eachActual) {
+                            return setType.equals(eachExpected, eachActual);
+                        }
+                    });
+                }
+            });
+
         } else {
             throw throwInvalidType(expected, actual, columnTypes);
         }

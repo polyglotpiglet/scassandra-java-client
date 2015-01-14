@@ -5,6 +5,8 @@ import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.scassandra.http.client.ColumnTypes;
 import org.scassandra.http.client.PreparedStatementExecution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -15,6 +17,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedStatementExecution>> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PreparedStatementMatcher.class);
 
     private PreparedStatementExecution expectedPreparedStatementExecution;
 
@@ -39,9 +43,19 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
 
     @Override
     protected boolean matchesSafely(List<PreparedStatementExecution> queries) {
-        for (PreparedStatementExecution query : queries) {
-            if (doesPreparedStatementMatch(query)) {
-                return true;
+        for (int i = 0; i < queries.size(); i++) {
+            PreparedStatementExecution actualPreparedStatementExecution = queries.get(i);
+            try {
+                if (doesPreparedStatementMatch(actualPreparedStatementExecution)) {
+                    return true;
+                }
+            } catch (IllegalArgumentException e) {
+                // if it is the last one let this out
+                if (i == queries.size() - 1) {
+                    throw e;
+                } else {
+                    LOGGER.info("Found prepared statement execution that didn't match: {}, reason: {}", actualPreparedStatementExecution, e.getMessage());
+                }
             }
         }
         return false;
@@ -60,7 +74,6 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
         }
 
 
-
         if (!actualPreparedStatementExecution.getConsistency().equals(expectedPreparedStatementExecution.getConsistency()))
             return false;
         if (!actualPreparedStatementExecution.getPreparedStatementText().equals(expectedPreparedStatementExecution.getPreparedStatementText()))
@@ -70,7 +83,6 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
         if (expectedVariables.size() != actualVariables.size()) {
             return false;
         }
-
 
 
         for (int index = 0; index < expectedVariables.size(); index++) {

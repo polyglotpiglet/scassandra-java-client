@@ -1,5 +1,7 @@
 package org.scassandra.http.client;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.commons.codec.binary.Hex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,20 +52,14 @@ public class ColumnTypesTest {
 
                 {Bigint, 1, 1d, MATCH},
                 {Bigint, 1l, 1d, MATCH},
-//                {Bigint, 1l, "1", MATCH},
-//                {Bigint, "1", "1", MATCH},
                 {Bigint, new BigInteger("1"), 1d, MATCH},
-//                {Bigint, new BigInteger("1"), 1, MATCH},
 
                 {Bigint, null, 1d, NO_MATCH},
                 {Bigint, "hello", 1d, ILLEGAL_ARGUMENT},
                 
                 {Counter, 1, 1d, MATCH},
                 {Counter, 1l, 1d, MATCH},
-//                {Counter, 1l, "1", MATCH},
-//                {Counter, "1", "1", MATCH},
                 {Counter, new BigInteger("1"), 1d, MATCH},
-//                {Counter, new BigInteger("1"), 1, MATCH},
 
                 {Counter, new BigInteger("1"), null, NO_MATCH},
                 {Counter, null, new BigInteger("1"), NO_MATCH},
@@ -72,8 +68,6 @@ public class ColumnTypesTest {
                 {Int, 1, 1d, MATCH},
                 {Int, "1", 1d, MATCH},
                 {Int, new BigInteger("1"), 1d, MATCH},
-//                {Int, "1", 1, MATCH},
-//                {Int, 1, "1", MATCH},
 
                 {Int, null, 1, NO_MATCH},
                 {Int, "hello", 1d, ILLEGAL_ARGUMENT},
@@ -201,6 +195,49 @@ public class ColumnTypesTest {
                 {Inet, 1l, InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
                 {Inet, 1, InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
                 {Inet, new BigInteger("1"), InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
+                
+                {TextSet, Sets.newHashSet("one"), Lists.newArrayList("one"), MATCH},
+                {TextSet, Sets.newHashSet("one"), Lists.newArrayList("two"), NO_MATCH},
+                {TextSet, Sets.newHashSet("one"), Lists.newArrayList("one", "two"), NO_MATCH},
+                {TextSet, null, Lists.newArrayList("one", "two"), NO_MATCH},
+                {TextSet, Sets.newHashSet("one"), null, NO_MATCH},
+
+                {TextSet, new Date(1l),  Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {TextSet, 1l, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {TextSet, 1, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {TextSet, new BigInteger("1"), Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+
+                {AsciiSet, Sets.newHashSet("one"), Lists.newArrayList("one"), MATCH},
+                {AsciiSet, Sets.newHashSet("one"), Lists.newArrayList("one", "two"), NO_MATCH},
+                {AsciiSet, null, Lists.newArrayList("one", "two"), NO_MATCH},
+                {AsciiSet, Sets.newHashSet("one"), null, NO_MATCH},
+
+                {AsciiSet, new Date(1l),  Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {AsciiSet, 1l, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {AsciiSet, 1, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {AsciiSet, new BigInteger("1"), Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                
+                {VarcharSet, Sets.newHashSet("one"), Lists.newArrayList("one"), MATCH},
+                {VarcharSet, Sets.newHashSet("one"), Lists.newArrayList("one", "two"), NO_MATCH},
+                {VarcharSet, null, Lists.newArrayList("one", "two"), NO_MATCH},
+                {VarcharSet, Sets.newHashSet("one"), null, NO_MATCH},
+
+                {VarcharSet, new Date(1l),  Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {VarcharSet, 1l, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {VarcharSet, 1, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {VarcharSet, new BigInteger("1"), Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+
+                {UuidSet, Sets.newHashSet(UUID.randomUUID()), Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), NO_MATCH},
+                {UuidSet, Sets.newHashSet(UUID.randomUUID().toString()), Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), NO_MATCH},
+                {UuidSet, Sets.newHashSet((UUID) null), Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), NO_MATCH},
+                {UuidSet, Sets.newHashSet("59ad61d0-c540-11e2-881e-b9e6057626c4"), Lists.newArrayList((UUID) null),  NO_MATCH},
+
+                {UuidSet, new Date(1l),  Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
+                {UuidSet, 1l, Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
+                {UuidSet, 1, Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
+                {UuidSet, "1", Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
+                {UuidSet, new BigInteger("1"), Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
+                {UuidSet, "hello", Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
         });
     }
 
@@ -224,7 +261,8 @@ public class ColumnTypesTest {
                 break;
             }
             case NO_MATCH : {
-                assertFalse(type.equals(expected, actual));
+                boolean equals = type.equals(expected, actual);
+                assertFalse("Expected no match but got: " + equals, equals);
                 break;
             }
             case ILLEGAL_ARGUMENT : {
