@@ -1,5 +1,6 @@
 package org.scassandra.http.client;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.apache.commons.codec.binary.Hex;
@@ -56,7 +57,7 @@ public class ColumnTypesTest {
 
                 {Bigint, null, 1d, NO_MATCH},
                 {Bigint, "hello", 1d, ILLEGAL_ARGUMENT},
-                
+
                 {Counter, 1, 1d, MATCH},
                 {Counter, 1l, 1d, MATCH},
                 {Counter, new BigInteger("1"), 1d, MATCH},
@@ -115,7 +116,7 @@ public class ColumnTypesTest {
                 {Decimal, 1l, 1, ILLEGAL_ARGUMENT},
                 {Decimal, "hello", new BigInteger("1"), ILLEGAL_ARGUMENT},
                 {Decimal, "hello", 1, ILLEGAL_ARGUMENT},
-                
+
                 {Float, "1", "1", MATCH},
                 {Float, "1.0000", "1", MATCH},
 
@@ -128,7 +129,7 @@ public class ColumnTypesTest {
                 {Float, 1l, 1, ILLEGAL_ARGUMENT},
                 {Float, "hello", new BigInteger("1"), ILLEGAL_ARGUMENT},
                 {Float, "hello", 1, ILLEGAL_ARGUMENT},
-                
+
                 {Double, "1", "1", MATCH},
                 {Double, "1.0000", "1", MATCH},
 
@@ -166,7 +167,7 @@ public class ColumnTypesTest {
                 {Timeuuid, "1", "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
                 {Timeuuid, new BigInteger("1"), "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
                 {Timeuuid, "hello", "59ad61d0-c540-11e2-881e-b9e6057626c4", ILLEGAL_ARGUMENT},
-                
+
                 {Uuid, "59ad61d0-c540-11e2-881e-b9e6057626c4", "59ad61d0-c540-11e2-881e-b9e6057626c4", MATCH},
                 {Uuid, UUID.fromString("59ad61d0-c540-11e2-881e-b9e6057626c4"), "59ad61d0-c540-11e2-881e-b9e6057626c4", MATCH},
 
@@ -184,7 +185,7 @@ public class ColumnTypesTest {
 
                 {Inet, InetAddress.getLocalHost(), InetAddress.getLocalHost().getHostAddress(), MATCH},
                 {Inet, InetAddress.getLocalHost().getHostAddress(), InetAddress.getLocalHost().getHostAddress(), MATCH},
-                
+
                 {Inet, InetAddress.getLocalHost(), "192.168.56.56", NO_MATCH},
                 {Inet, InetAddress.getLocalHost().getHostAddress(), "192.168.56.56", NO_MATCH},
 
@@ -195,7 +196,7 @@ public class ColumnTypesTest {
                 {Inet, 1l, InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
                 {Inet, 1, InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
                 {Inet, new BigInteger("1"), InetAddress.getLocalHost().getHostAddress(), ILLEGAL_ARGUMENT},
-                
+
                 {TextSet, Sets.newHashSet("one"), Lists.newArrayList("one"), MATCH},
                 {TextSet, Sets.newHashSet("one"), Lists.newArrayList("two"), NO_MATCH},
                 {TextSet, Sets.newHashSet("one"), Lists.newArrayList("one", "two"), NO_MATCH},
@@ -216,7 +217,7 @@ public class ColumnTypesTest {
                 {AsciiSet, 1l, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
                 {AsciiSet, 1, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
                 {AsciiSet, new BigInteger("1"), Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
-                
+
                 {VarcharSet, Sets.newHashSet("one"), Lists.newArrayList("one"), MATCH},
                 {VarcharSet, Sets.newHashSet("one"), Lists.newArrayList("one", "two"), NO_MATCH},
                 {VarcharSet, null, Lists.newArrayList("one", "two"), NO_MATCH},
@@ -251,6 +252,21 @@ public class ColumnTypesTest {
                 {TextList, 1l, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
                 {TextList, 1, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
                 {TextList, new BigInteger("1"), Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+
+                {TextTextMap, ImmutableMap.of("ONE", "1"), ImmutableMap.of("ONE", "1"), MATCH},
+                {TextTextMap, ImmutableMap.of(), ImmutableMap.of(), MATCH},
+                {TextTextMap, ImmutableMap.of("ONE", "1", "TWO", "2"), ImmutableMap.of("ONE", "1"), NO_MATCH},
+                {TextTextMap, ImmutableMap.of("ONE", "1"), ImmutableMap.of("ONE", "1", "TWO", "2"), NO_MATCH},
+                {TextTextMap, ImmutableMap.of("ONE", "1"), ImmutableMap.of("ONE", "2"), NO_MATCH},
+                {TextTextMap, ImmutableMap.of("ONE", "1"), ImmutableMap.of("ONE", "2"), NO_MATCH},
+                {TextTextMap, ImmutableMap.of("ONE", "1"), ImmutableMap.of("TWO", "1"), NO_MATCH},
+                {TextTextMap, null, ImmutableMap.of("TWO", "1"), NO_MATCH},
+                {TextTextMap, ImmutableMap.of("ONE", "1"), null, NO_MATCH},
+
+                {TextTextMap, new Date(1l),  ImmutableMap.of("ONE", "1"), ILLEGAL_ARGUMENT},
+                {TextTextMap, 1l, ImmutableMap.of("ONE", "1"), ILLEGAL_ARGUMENT},
+                {TextTextMap, 1, ImmutableMap.of("ONE", "1"), ILLEGAL_ARGUMENT},
+                {TextTextMap, new BigInteger("1"), ImmutableMap.of("ONE", "1"), ILLEGAL_ARGUMENT},
         });
     }
 

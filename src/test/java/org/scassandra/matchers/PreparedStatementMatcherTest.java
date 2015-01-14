@@ -1,5 +1,6 @@
 package org.scassandra.matchers;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.junit.Test;
@@ -484,6 +485,32 @@ public class PreparedStatementMatcherTest {
         PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
                 .withPreparedStatementText("same query")
                 .withVariables(listOfText)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution, nonMatchingActual));
+
+        //then
+        assertTrue(matched);
+    }
+    
+    @Test
+    public void matchingTextMaps() throws Exception {
+        //given
+        Map<String, String> map = ImmutableMap.of("one", "1");
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder(TextTextMap)
+                .withPreparedStatementText("same query")
+                .withVariables(map)
+                .build();
+        PreparedStatementExecution nonMatchingActual = PreparedStatementExecution.builder(Double)
+                .withPreparedStatementText("same query")
+                .withVariables(1d)
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(map)
                 .build();
 
         PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);

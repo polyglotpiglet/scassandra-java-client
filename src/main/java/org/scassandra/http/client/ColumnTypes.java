@@ -15,7 +15,6 @@
  */
 package org.scassandra.http.client;
 
-import com.google.common.base.Equivalence;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
@@ -25,10 +24,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public enum ColumnTypes {
 
@@ -502,35 +498,78 @@ public enum ColumnTypes {
     },
 
     @SerializedName("map<varchar,varchar>")
-    VarcharVarcharMap,
+    VarcharVarcharMap {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Varchar, Varchar);
+        }
+    },
 
     @SerializedName("map<varchar,text>")
-    VarcharTextMap,
+    VarcharTextMap  {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Varchar, Text);
+        }
+    },
 
     @SerializedName("map<varchar,ascii>")
-    VarcharAsciiMap,
+    VarcharAsciiMap {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Varchar, Ascii);
+        }
+    },
 
     @SerializedName("map<text,varchar>")
-    TextVarcharMap,
+    TextVarcharMap  {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Text, Varchar);
+        }
+    },
 
     @SerializedName("map<text,text>")
-    TextTextMap,
+    TextTextMap {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Text, Text);
+        }
+    },
 
     @SerializedName("map<text,ascii>")
-    TextAsciiMap,
+    TextAsciiMap  {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Text, Ascii);
+        }
+    },
 
     @SerializedName("map<ascii,varchar>")
-    AsciiVarcharMap,
+    AsciiVarcharMap  {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Ascii, Varchar);
+        }
+    },
 
     @SerializedName("map<ascii,text>")
-    AsciiTextMap,
+    AsciiTextMap  {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Ascii, Text);
+        }
+    },
 
     @SerializedName("map<ascii,ascii>")
-    AsciiAsciiMap;
+    AsciiAsciiMap  {
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareMap(expected, actual, this, Ascii, Ascii);
+        }
+    };
 
-    public boolean equals(Object expected, Object actual) {
-        return false;
-    }
+    abstract public boolean equals(Object expected, Object actual);
 
     private static IllegalArgumentException throwInvalidType(Object expected, Object actual, ColumnTypes instance) {
         return new IllegalArgumentException(String.format("Invalid expected value (%s,%s) for variable of types %s, the value was %s for valid types see: %s",
@@ -562,7 +601,7 @@ public enum ColumnTypes {
     private static boolean equalsForLongType(Object expected, Object actual, ColumnTypes columnTypes) {
 
         if (expected == null) return actual == null;
-        if (actual == null) return expected == null;
+        if (actual == null) return false;
 
         Long typedActual = ((Double) actual).longValue();
 
@@ -601,7 +640,7 @@ public enum ColumnTypes {
 
     private static boolean equalsForUUID(Object expected, Object actual, ColumnTypes columnTypes) {
         if (expected == null) return actual == null;
-        if (actual == null) return expected == null;
+        if (actual == null) return false;
 
         if (expected instanceof String) {
             try {
@@ -618,18 +657,17 @@ public enum ColumnTypes {
 
     private static boolean compareSet(Object expected, Object actual, ColumnTypes columnTypes, final ColumnTypes setType) {
         if (expected == null) return actual == null;
-        if (actual == null) return expected == null;
+        if (actual == null) return false;
 
         if (expected instanceof Set) {
             final Set<?> typedExpected = (Set<?>) expected;
             final List<?> actualList = (List<?>) actual;
 
-            if (typedExpected.size() != actualList.size()) return false;
-
-            return Iterables.all(typedExpected, new Predicate<Object>() {
-                @Override
-                public boolean apply(final Object eachExpected) {
-                    return Iterables.any(actualList, new Predicate<Object>() {
+            return typedExpected.size() == actualList.size() && 
+                    Iterables.all(typedExpected, new Predicate<Object>() {
+                        @Override
+                        public boolean apply(final Object eachExpected) {
+                            return Iterables.any(actualList, new Predicate<Object>() {
                         @Override
                         public boolean apply(Object eachActual) {
                             return setType.equals(eachExpected, eachActual);
@@ -645,7 +683,7 @@ public enum ColumnTypes {
 
     private static boolean compareList(Object expected, Object actual, ColumnTypes columnTypes, final ColumnTypes listType) {
         if (expected == null) return actual == null;
-        if (actual == null) return expected == null;
+        if (actual == null) return false;
 
         if (expected instanceof List) {
             final List<?> typedExpected = (List<?>) expected;
@@ -655,6 +693,33 @@ public enum ColumnTypes {
 
             for (int i = 0; i < actualList.size(); i++) {
                 if (!listType.equals(typedExpected.get(i), actualList.get(i))) return false;
+            }
+            return true;
+        } else {
+            throw throwInvalidType(expected, actual, columnTypes);
+        }
+    }
+    
+    private static boolean compareMap(Object expected, Object actual, ColumnTypes columnTypes, final ColumnTypes keyType, final ColumnTypes valueType) {
+        if (expected == null) return actual == null;
+        if (actual == null) return false;
+
+        if (expected instanceof Map) {
+            final Map<?,?> typedExpected = (Map<?, ?>) expected;
+            final Map<?,?> actualMap = (Map<?, ?>) actual;
+
+            if (typedExpected.size() != actualMap.size()) return false;
+
+            for (final Map.Entry<?, ?> eachExpected : typedExpected.entrySet()) {
+                boolean match = Iterables.any(actualMap.keySet(), new Predicate<Object>() {
+                    @Override
+                    public boolean apply(Object eachActualKey) {
+                        Object eachActual = actualMap.get(eachActualKey);
+                        return keyType.equals(eachExpected.getKey(), eachActualKey) && valueType.equals(eachExpected.getValue(), eachActual);
+                    }
+                });
+                
+                if (!match) return false;
             }
             return true;
         } else {
