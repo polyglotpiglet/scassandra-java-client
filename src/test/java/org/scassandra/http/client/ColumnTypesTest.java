@@ -238,6 +238,19 @@ public class ColumnTypesTest {
                 {UuidSet, "1", Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
                 {UuidSet, new BigInteger("1"), Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
                 {UuidSet, "hello", Lists.newArrayList("59ad61d0-c540-11e2-881e-b9e6057626c4"), ILLEGAL_ARGUMENT},
+
+                {TextList, Lists.newArrayList("one"), Lists.newArrayList("one"), MATCH},
+                {TextList, Lists.newArrayList("one"), Lists.newArrayList("two"), NO_MATCH},
+                {TextList, Lists.newArrayList("one", "two"), Lists.newArrayList("one", "two"), MATCH},
+                {TextList, Lists.newArrayList("one", "two"), Lists.newArrayList("two", "one"), NO_MATCH},
+                {TextList, Lists.newArrayList("one"), Lists.newArrayList("one", "two"), NO_MATCH},
+                {TextList, null, Lists.newArrayList("one", "two"), NO_MATCH},
+                {TextList, Lists.newArrayList("one"), null, NO_MATCH},
+
+                {TextList, new Date(1l),  Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {TextList, 1l, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {TextList, 1, Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
+                {TextList, new BigInteger("1"), Lists.newArrayList("one"), ILLEGAL_ARGUMENT},
         });
     }
 

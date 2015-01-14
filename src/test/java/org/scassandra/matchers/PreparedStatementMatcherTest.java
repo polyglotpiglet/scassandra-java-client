@@ -468,4 +468,30 @@ public class PreparedStatementMatcherTest {
         //then
         assertTrue(matched);
     }
+
+    @Test
+    public void matchingTextLists() throws Exception {
+        //given
+        List<String> listOfText = Lists.newArrayList("1", "2");
+        PreparedStatementExecution nonMatchingActual = PreparedStatementExecution.builder(Double)
+                .withPreparedStatementText("same query")
+                .withVariables(1d)
+                .build();
+        PreparedStatementExecution actualExecution = PreparedStatementExecution.builder(TextList)
+                .withPreparedStatementText("same query")
+                .withVariables(new ArrayList<String>(listOfText))
+                .build();
+        PreparedStatementExecution expectedExecution = PreparedStatementExecution.builder()
+                .withPreparedStatementText("same query")
+                .withVariables(listOfText)
+                .build();
+
+        PreparedStatementMatcher underTest = new PreparedStatementMatcher(expectedExecution);
+
+        //when
+        boolean matched = underTest.matchesSafely(Lists.newArrayList(actualExecution, nonMatchingActual));
+
+        //then
+        assertTrue(matched);
+    }
 }

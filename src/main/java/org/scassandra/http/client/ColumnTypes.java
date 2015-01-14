@@ -15,6 +15,7 @@
  */
 package org.scassandra.http.client;
 
+import com.google.common.base.Equivalence;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
@@ -206,7 +207,7 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             if (expected == null) return actual == null;
             if (actual == null) return expected == null;
-            
+
             if (expected instanceof String) {
                 try {
                     return expected.equals(actual);
@@ -216,7 +217,7 @@ public enum ColumnTypes {
             } else if (expected instanceof InetAddress) {
                 return ((InetAddress) expected).getHostAddress().equals(actual);
             }
-            
+
             throw throwInvalidType(expected, actual, this);
         }
     },
@@ -237,7 +238,7 @@ public enum ColumnTypes {
             return compareSet(expected, actual, this, Varchar);
         }
     },
-    
+
 
     @SerializedName("set<ascii>")
     AsciiSet {
@@ -258,7 +259,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<bigint>")
-    BigintSet  {
+    BigintSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -267,7 +268,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<blob>")
-    BlobSet  {
+    BlobSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -276,7 +277,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<boolean>")
-    BooleanSet  {
+    BooleanSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -285,7 +286,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<decimal>")
-    DecimalSet  {
+    DecimalSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -294,7 +295,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<double>")
-    DoubleSet  {
+    DoubleSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -303,7 +304,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<float>")
-    FloatSet  {
+    FloatSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -312,7 +313,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<inet>")
-    InetSet  {
+    InetSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -321,7 +322,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<int>")
-    IntSet  {
+    IntSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -330,7 +331,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<timestamp>")
-    TimestampSet  {
+    TimestampSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -339,7 +340,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<timeuuid>")
-    TimeuuidSet  {
+    TimeuuidSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -357,7 +358,7 @@ public enum ColumnTypes {
     },
 
     @SerializedName("set<varint>")
-    VarintSet  {
+    VarintSet {
         // comes back as a List
         @Override
         public boolean equals(Object expected, Object actual) {
@@ -366,49 +367,139 @@ public enum ColumnTypes {
     },
 
     @SerializedName("list<varchar>")
-    VarcharList,
+    VarcharList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Varchar);
+        }
+    },
 
     @SerializedName("list<ascii>")
-    AsciiList,
+    AsciiList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Ascii);
+        }
+    },
 
     @SerializedName("list<text>")
-    TextList,
+    TextList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Text);
+        }
+    },
 
     @SerializedName("list<bigint>")
-    BigintList,
+    BigintList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Bigint);
+        }
+    },
 
     @SerializedName("list<blob>")
-    BlobList,
+    BlobList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Blob);
+        }
+    },
 
     @SerializedName("list<boolean>")
-    BooleanList,
+    BooleanList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Boolean);
+        }
+    },
 
     @SerializedName("list<decimal>")
-    DecimalList,
+    DecimalList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Decimal);
+        }
+    },
 
     @SerializedName("list<double>")
-    DoubleList,
+    DoubleList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Double);
+        }
+    },
 
     @SerializedName("list<float>")
-    FloatList,
+    FloatList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Float);
+        }
+    },
 
     @SerializedName("list<inet>")
-    InetList,
+    InetList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Inet);
+        }
+    },
 
     @SerializedName("list<int>")
-    IntList,
+    IntList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Int);
+        }
+    },
 
     @SerializedName("list<timestamp>")
-    TimestampList,
+    TimestampList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Timestamp);
+        }
+    },
 
     @SerializedName("list<timeuuid>")
-    TimeuuidList,
+    TimeuuidList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Timeuuid);
+        }
+    },
 
     @SerializedName("list<uuid>")
-    UuidList,
+    UuidList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Uuid);
+        }
+    },
 
     @SerializedName("list<varint>")
-    VarintList,
+    VarintList {
+        // comes back as a List
+        @Override
+        public boolean equals(Object expected, Object actual) {
+            return compareList(expected, actual, this, Varint);
+        }
+    },
 
     @SerializedName("map<varchar,varchar>")
     VarcharVarcharMap,
@@ -547,6 +638,25 @@ public enum ColumnTypes {
                 }
             });
 
+        } else {
+            throw throwInvalidType(expected, actual, columnTypes);
+        }
+    }
+
+    private static boolean compareList(Object expected, Object actual, ColumnTypes columnTypes, final ColumnTypes listType) {
+        if (expected == null) return actual == null;
+        if (actual == null) return expected == null;
+
+        if (expected instanceof List) {
+            final List<?> typedExpected = (List<?>) expected;
+            final List<?> actualList = (List<?>) actual;
+
+            if (typedExpected.size() != actualList.size()) return false;
+
+            for (int i = 0; i < actualList.size(); i++) {
+                if (!listType.equals(typedExpected.get(i), actualList.get(i))) return false;
+            }
+            return true;
         } else {
             throw throwInvalidType(expected, actual, columnTypes);
         }
