@@ -11,7 +11,7 @@ public class VersionIntegrationTest {
     public void getVersion() {
         scassandra.start();
         String version = scassandra.serverVersion();
-        assertEquals("0.5.0", version);
+        assertEquals("0.6.0-SNAPSHOT", version);
     }
 
 }
