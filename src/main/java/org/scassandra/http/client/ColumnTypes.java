@@ -26,8 +26,11 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+/**
+ * This won't be an enum in version 1.0 where we'll make a braking change to represent
+ * types using classes like Jackson
+ */
 public enum ColumnTypes {
-
     @SerializedName("ascii")
     Ascii {
         @Override
@@ -567,9 +570,22 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Ascii, Ascii);
         }
-    };
+    },
 
-    abstract public boolean equals(Object expected, Object actual);
+    @SerializedName("map<bigint,varchar>")
+    BigintVarcharMap,
+    
+    @SerializedName("map<bigint,text>")
+    BigintTextMap,
+    
+    @SerializedName("map<bigint,ascii>")
+    BigintAsciiMap
+    
+    ;
+
+    public boolean equals(Object expected, Object actual) {
+        return false;
+    }
 
     private static IllegalArgumentException throwInvalidType(Object expected, Object actual, ColumnTypes instance) {
         return new IllegalArgumentException(String.format("Invalid expected value (%s,%s) for variable of types %s, the value was %s for valid types see: %s",
