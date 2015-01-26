@@ -16,6 +16,7 @@
 package org.scassandra.http.client;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -25,6 +26,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.scassandra.http.client.types.CqlType;
+import org.scassandra.http.client.types.CqlTypeSerialiser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,12 +66,13 @@ public class PrimingClient {
 
     public static PrimingClientBuilder builder() { return new PrimingClientBuilder(); }
 
-    private Gson gson = new Gson();
+    private Gson gson = new GsonBuilder().registerTypeAdapter(CqlType.class, new CqlTypeSerialiser()).create();
     private CloseableHttpClient httpClient = HttpClients.createDefault();
     private String primeQueryUrl;
     private String primePreparedUrl;
 
     private PrimingClient(String host, int port) {
+
         this.primeQueryUrl = "http://" + host + ":" + port + "/prime-query-single";
         this.primePreparedUrl = "http://" + host + ":" + port + "/prime-prepared-single";
     }

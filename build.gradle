@@ -4,12 +4,20 @@ apply plugin: 'signing'
 apply plugin: 'maven'
 
 buildscript {
-    repositories { jcenter() }
+    repositories {
+        jcenter()
+        maven {
+            name 'JFrog OSS snapshot repo'
+            url  'https://oss.jfrog.org/oss-snapshot-local/'
+        }
+    }
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+        classpath 'me.champeau.gradle:antlr4-gradle-plugin:0.1'
     }
 }
 
+apply plugin: 'me.champeau.gradle.antlr4'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'org.scassandra'
@@ -166,4 +174,13 @@ shadowJar {
 install.dependsOn shadowJar
 uploadArchives.dependsOn shadowJar
 
+// make the Java compile task depend on the antlr4 task
+compileJava.dependsOn antlr4
 
+// add the generated source files to the list of java sources
+sourceSets.main.java.srcDirs += antlr4.output
+
+// add antlr4 to classpath
+configurations {
+    compile.extendsFrom antlr4
+}

@@ -19,6 +19,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.codec.binary.Hex;
+import org.scassandra.http.client.types.CqlType;
+import org.scassandra.http.client.types.PrimitiveType;
+import org.scassandra.http.client.types.SetType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -154,6 +157,8 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return Ascii.equals(expected, actual);
         }
+
+
     },
 
     @SerializedName("varint")
@@ -235,6 +240,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Varchar);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(PrimitiveType.VARCHAR);
         }
     },
 
@@ -570,22 +580,18 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Ascii, Ascii);
         }
-    },
-
-    @SerializedName("map<bigint,varchar>")
-    BigintVarcharMap,
-    
-    @SerializedName("map<bigint,text>")
-    BigintTextMap,
-    
-    @SerializedName("map<bigint,ascii>")
-    BigintAsciiMap
-    
+    }
     ;
 
+    //todo make abstract
     public boolean equals(Object expected, Object actual) {
         return false;
     }
+
+    public CqlType getType() {
+        return PrimitiveType.ASCII;
+    }
+
 
     private static IllegalArgumentException throwInvalidType(Object expected, Object actual, ColumnTypes instance) {
         return new IllegalArgumentException(String.format("Invalid expected value (%s,%s) for variable of types %s, the value was %s for valid types see: %s",

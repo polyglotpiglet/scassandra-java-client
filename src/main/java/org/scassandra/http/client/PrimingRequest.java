@@ -15,6 +15,9 @@
  */
 package org.scassandra.http.client;
 
+import org.scassandra.http.client.types.ColumnMetadata;
+import org.scassandra.http.client.types.CqlType;
+
 import java.util.*;
 
 public final class PrimingRequest {
@@ -35,10 +38,10 @@ public final class PrimingRequest {
 
         private Consistency[] consistency;
         private ColumnTypes[] variableTypes;
-        private Map<String, ColumnTypes> columnTypes;
+        private List<ColumnMetadata> columnTypesMeta;
         private String query;
         private String queryPattern;
-        private List<Map<String, ? extends Object>> rows;
+        private List<Map<String, ?>> rows;
         private Result result = Result.success;
         private Long fixedDelay;
 
@@ -63,6 +66,7 @@ public final class PrimingRequest {
             return this;
         }
 
+
         @SafeVarargs
         public final PrimingRequestBuilder withRows(Map<String, ? extends Object>... rows) {
             this.rows = Arrays.asList(rows);
@@ -71,6 +75,38 @@ public final class PrimingRequest {
 
         public PrimingRequestBuilder withResult(Result result) {
             this.result = result;
+            return this;
+        }
+
+        public PrimingRequestBuilder withConsistency(Consistency... consistencies) {
+            consistency = consistencies;
+            return this;
+        }
+
+        /**
+         * @deprecated Use ColumnMetadata instead. This will be removed in version 1.0
+         */
+        @Deprecated
+        public PrimingRequestBuilder withColumnTypes(Map<String, ColumnTypes> types) {
+            List<ColumnMetadata> columnMetadata = new ArrayList<ColumnMetadata>();
+            for (Map.Entry<String, ColumnTypes> entry : types.entrySet()) {
+                columnMetadata.add(new ColumnMetadata(entry.getKey(), entry.getValue().getType()));
+            }
+            this.columnTypesMeta = columnMetadata;
+            return this;
+        }
+
+        public PrimingRequestBuilder withColumnTypes(ColumnMetadata... columnMetadata) {
+            this.columnTypesMeta = Arrays.asList(columnMetadata);
+            return this;
+        }
+
+        /**
+         * @deprecated Use ColumnMetadata instead. This will be removed in version 1.0
+         */
+        @Deprecated
+        public PrimingRequestBuilder withVariableTypes(ColumnTypes... variableTypes) {
+            this.variableTypes = variableTypes;
             return this;
         }
 
@@ -95,22 +131,7 @@ public final class PrimingRequest {
             if (result == Result.success && rows == null) {
                 rowsDefaultedToEmptyForSuccess = Collections.emptyList();
             }
-            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypes, variableTypes, fixedDelay);
-        }
-
-        public PrimingRequestBuilder withConsistency(Consistency... consistencies) {
-            consistency = consistencies;
-            return this;
-        }
-
-        public PrimingRequestBuilder withColumnTypes(Map<String, ColumnTypes> types) {
-            this.columnTypes = types;
-            return this;
-        }
-
-        public PrimingRequestBuilder withVariableTypes(ColumnTypes... variableTypes) {
-            this.variableTypes = variableTypes;
-            return this;
+            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypesMeta, variableTypes, fixedDelay);
         }
     }
 
@@ -125,7 +146,7 @@ public final class PrimingRequest {
     private final When when;
     private final Then then;
 
-    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> columnTypes, ColumnTypes[] variableTypes, Long fixedDelay) {
+    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ?>> rows, Result result, List<ColumnMetadata> columnTypes, ColumnTypes[] variableTypes, Long fixedDelay) {
         this.primeType = primeType;
         this.when = new When(query, queryPattern, consistency);
         this.then = new Then(rows, result, columnTypes, variableTypes, fixedDelay);
@@ -171,15 +192,22 @@ public final class PrimingRequest {
         private final ColumnTypes[] variable_types;
         private final List<Map<String, ? extends Object>> rows;
         private final Result result;
-        private final Map<String, ColumnTypes> column_types;
+        private final Map<String, CqlType> column_types;
         private final Long fixedDelay;
 
-        private Then(List<Map<String, ? extends Object>> rows, Result result, Map<String, ColumnTypes> column_types, ColumnTypes[] variable_types, Long fixedDelay) {
+        private Then(List<Map<String, ? extends Object>> rows, Result result, List<ColumnMetadata> column_types, ColumnTypes[] variable_types, Long fixedDelay) {
             this.rows = rows;
             this.result = result;
-            this.column_types = column_types;
             this.variable_types = variable_types;
             this.fixedDelay = fixedDelay;
+            if (column_types != null) {
+                this.column_types = new HashMap<String, CqlType>();
+                for (ColumnMetadata column_type : column_types) {
+                    this.column_types.put(column_type.getName(), column_type.getType());
+                }
+            } else {
+                this.column_types = null;
+            }
         }
 
         @Override
@@ -226,8 +254,8 @@ public final class PrimingRequest {
             return result;
         }
 
-        public Map<String, ColumnTypes> getColumnTypes() {
-            return Collections.unmodifiableMap(column_types);
+        public Map<String, CqlType> getColumnTypes() {
+            return column_types;
         }
 
         public long getFixedDelay() {
