@@ -9,28 +9,28 @@ public class PrimitiveType extends CqlType {
 
     private static final Map<String, PrimitiveType> mapping = new HashMap<String, PrimitiveType>();
 
-    public static final PrimitiveType VARCHAR = registerPrimitive(ColumnTypes.Varchar);
-    public static final PrimitiveType TEXT = registerPrimitive(ColumnTypes.Text);
-    public static final PrimitiveType ASCII = registerPrimitive(ColumnTypes.Ascii);
-    public static final PrimitiveType DOUBLE = registerPrimitive(ColumnTypes.Double);
-    public static final PrimitiveType FLOAT = registerPrimitive(ColumnTypes.Float);
-    public static final PrimitiveType INET = registerPrimitive(ColumnTypes.Inet);
-    public static final PrimitiveType INT = registerPrimitive(ColumnTypes.Int);
-    public static final PrimitiveType BIG_INT = registerPrimitive(ColumnTypes.Bigint);
-    public static final PrimitiveType TIMESTAMP = registerPrimitive(ColumnTypes.Timestamp);
-    public static final PrimitiveType TIMEUUID = registerPrimitive(ColumnTypes.Timeuuid);
-    public static final PrimitiveType UUID = registerPrimitive(ColumnTypes.Uuid);
-    public static final PrimitiveType VAR_INT = registerPrimitive(ColumnTypes.Varint);
-    public static final PrimitiveType BLOB = registerPrimitive(ColumnTypes.Blob);
-    public static final PrimitiveType BOOLEAN = registerPrimitive(ColumnTypes.Boolean);
-    public static final PrimitiveType COUNTER = registerPrimitive(ColumnTypes.Counter);
-    public static final PrimitiveType DECIMAL = registerPrimitive(ColumnTypes.Decimal);
+    public static final PrimitiveType VARCHAR = registerPrimitive("varchar");
+    public static final PrimitiveType TEXT = registerPrimitive("text");
+    public static final PrimitiveType ASCII = registerPrimitive("ascii");
+    public static final PrimitiveType DOUBLE = registerPrimitive("double");
+    public static final PrimitiveType FLOAT = registerPrimitive("float");
+    public static final PrimitiveType INET = registerPrimitive("inet");
+    public static final PrimitiveType INT = registerPrimitive("int");
+    public static final PrimitiveType BIG_INT = registerPrimitive("bigint");
+    public static final PrimitiveType TIMESTAMP = registerPrimitive("timestamp");
+    public static final PrimitiveType TIMEUUID = registerPrimitive("timeuuid");
+    public static final PrimitiveType UUID = registerPrimitive("uuid");
+    public static final PrimitiveType VAR_INT = registerPrimitive("varint");
+    public static final PrimitiveType BLOB = registerPrimitive("blob");
+    public static final PrimitiveType BOOLEAN = registerPrimitive("boolean");
+    public static final PrimitiveType COUNTER = registerPrimitive("counter");
+    public static final PrimitiveType DECIMAL = registerPrimitive("decimal");
 
+    private final String columnType;
 
-
-    private static PrimitiveType registerPrimitive(ColumnTypes type) {
+    private static PrimitiveType registerPrimitive(String type) {
         PrimitiveType primitiveType = new PrimitiveType(type);
-        mapping.put(type.toString().toLowerCase(), primitiveType);
+        mapping.put(type, primitiveType);
         return primitiveType;
     }
 
@@ -38,16 +38,13 @@ public class PrimitiveType extends CqlType {
         return mapping.get(name);
     }
 
-
-    private ColumnTypes columnType;
-
-    private PrimitiveType(ColumnTypes columnType) {
+    private PrimitiveType(String columnType) {
         this.columnType = columnType;
     }
 
     @Override
     public String serialise() {
-        return columnType.toString().toLowerCase();
+        return columnType;
     }
 
     @Override
