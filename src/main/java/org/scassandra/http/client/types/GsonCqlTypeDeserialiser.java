@@ -1,6 +1,8 @@
 package org.scassandra.http.client.types;
 
 import com.google.gson.*;
+import org.scassandra.cql.CqlType;
+import org.scassandra.cql.CqlTypeFactory;
 
 import java.lang.reflect.Type;
 

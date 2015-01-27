@@ -19,8 +19,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.codec.binary.Hex;
-import org.scassandra.http.client.types.*;
-import org.scassandra.server.cqlmessages.types.CqlAscii;
+import org.scassandra.cql.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -28,7 +27,7 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static org.scassandra.http.client.types.PrimitiveType.*;
+import static org.scassandra.cql.PrimitiveType.*;
 
 /**
  * This won't be an enum in version 1.0 where we'll make a braking change to represent
@@ -760,7 +759,7 @@ public enum ColumnTypes {
         }
     }
     ;
-    private CqlType cqlType;
+
 
     abstract public boolean equals(Object expected, Object actual);
 

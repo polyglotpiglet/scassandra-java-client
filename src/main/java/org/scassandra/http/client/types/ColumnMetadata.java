@@ -1,5 +1,7 @@
 package org.scassandra.http.client.types;
 
+import org.scassandra.cql.CqlType;
+
 public class ColumnMetadata {
     private final String name;
     private final CqlType type;

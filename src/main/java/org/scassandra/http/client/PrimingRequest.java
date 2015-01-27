@@ -15,8 +15,8 @@
  */
 package org.scassandra.http.client;
 
+import org.scassandra.cql.CqlType;
 import org.scassandra.http.client.types.ColumnMetadata;
-import org.scassandra.http.client.types.CqlType;
 
 import java.util.*;
 
@@ -61,7 +61,7 @@ public final class PrimingRequest {
             return this;
         }
 
-        public PrimingRequestBuilder withRows(List<Map<String, ? extends Object>> rows) {
+        public PrimingRequestBuilder withRows(List<Map<String, ?>> rows) {
             this.rows = rows;
             return this;
         }
@@ -195,7 +195,7 @@ public final class PrimingRequest {
         private final Map<String, CqlType> column_types;
         private final Long fixedDelay;
 
-        private Then(List<Map<String, ? extends Object>> rows, Result result, List<ColumnMetadata> column_types, ColumnTypes[] variable_types, Long fixedDelay) {
+        private Then(List<Map<String, ?>> rows, Result result, List<ColumnMetadata> column_types, ColumnTypes[] variable_types, Long fixedDelay) {
             this.rows = rows;
             this.result = result;
             this.variable_types = variable_types;

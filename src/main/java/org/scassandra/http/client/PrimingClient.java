@@ -26,7 +26,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.scassandra.http.client.types.CqlType;
+import org.scassandra.cql.CqlType;
 import org.scassandra.http.client.types.GsonCqlTypeDeserialiser;
 import org.scassandra.http.client.types.GsonCqlTypeSerialiser;
 import org.slf4j.Logger;
@@ -106,6 +106,7 @@ public class PrimingClient {
      * @param primeRequest The Prime
      * @deprecated Use prime() instead.
      */
+    @Deprecated
     public void primePreparedStatement(PrimingRequest primeRequest) throws PrimeFailedException {
         if (primeRequest.primeType != PrimingRequest.PrimingRequestBuilder.PrimeType.PREPARED) {
             throw new IllegalArgumentException("Can't pass a query prime to primePreparedStatement, use preparedStatementBuilder()");
