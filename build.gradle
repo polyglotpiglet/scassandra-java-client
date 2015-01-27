@@ -125,6 +125,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.2.4'
     compile 'org.slf4j:slf4j-api:1.7.6'
     compile 'junit:junit:4.11'
+    compile 'org.antlr:antlr4-runtime:4.5'
     testCompile 'ch.qos.logback:logback-classic:1.1.1'
     testCompile 'org.mockito:mockito-all:1.9.5'
     testCompile 'com.github.tomakehurst:wiremock:1.46'
@@ -169,6 +170,11 @@ shadowJar {
         )
 
     }
+}
+
+antlr4 {
+    output = new File('src/main/generated/org/scassandra/antlr4')
+    extraArgs = ['-package', 'org.scassandra.antlr4']
 }
 
 install.dependsOn shadowJar

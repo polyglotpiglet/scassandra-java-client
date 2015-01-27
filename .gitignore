@@ -8,3 +8,4 @@ buildAndCopy.sh
 target
 *.bat
 .idea
+generated

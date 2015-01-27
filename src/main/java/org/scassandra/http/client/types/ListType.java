@@ -1,15 +1,15 @@
 package org.scassandra.http.client.types;
 
-public class SetType extends CqlType {
+public class ListType extends CqlType {
     private final CqlType type;
 
-    public SetType(CqlType type) {
+    public ListType(CqlType type) {
         this.type = type;
     }
 
     @Override
     public String serialise() {
-        return String.format("set<%s>", type.serialise());
+        return String.format("list<%s>", type.serialise());
     }
 
     @Override
@@ -17,7 +17,7 @@ public class SetType extends CqlType {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SetType setType = (SetType) o;
+        ListType setType = (ListType) o;
 
         if (type != null ? !type.equals(setType.type) : setType.type != null) return false;
 

@@ -19,15 +19,16 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.codec.binary.Hex;
-import org.scassandra.http.client.types.CqlType;
-import org.scassandra.http.client.types.PrimitiveType;
-import org.scassandra.http.client.types.SetType;
+import org.scassandra.http.client.types.*;
+import org.scassandra.server.cqlmessages.types.CqlAscii;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
+
+import static org.scassandra.http.client.types.PrimitiveType.*;
 
 /**
  * This won't be an enum in version 1.0 where we'll make a braking change to represent
@@ -92,6 +93,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return equalsForLongType(expected, actual, this);
         }
+
+        @Override
+        public CqlType getType() {
+            return COUNTER;
+        }
     },
 
     @SerializedName("decimal")
@@ -127,6 +133,7 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return equalsForLongType(expected, actual, this);
         }
+
     },
 
     @SerializedName("timestamp")
@@ -244,7 +251,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(PrimitiveType.VARCHAR);
+            return new SetType(VARCHAR);
         }
     },
 
@@ -256,6 +263,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Ascii);
         }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(ASCII);
+        }
     },
 
     @SerializedName("set<text>")
@@ -264,6 +276,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Text);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(TEXT);
         }
     },
 
@@ -274,6 +291,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Bigint);
         }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(BIG_INT);
+        }
     },
 
     @SerializedName("set<blob>")
@@ -282,6 +304,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Blob);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(BLOB);
         }
     },
 
@@ -292,6 +319,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Boolean);
         }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(BOOLEAN);
+        }
     },
 
     @SerializedName("set<decimal>")
@@ -300,6 +332,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Decimal);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(DECIMAL);
         }
     },
 
@@ -310,6 +347,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Double);
         }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(DOUBLE);
+        }
     },
 
     @SerializedName("set<float>")
@@ -318,6 +360,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Float);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(FLOAT);
         }
     },
 
@@ -328,6 +375,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Inet);
         }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(INET);
+        }
     },
 
     @SerializedName("set<int>")
@@ -336,6 +388,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Int);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(INT);
         }
     },
 
@@ -346,6 +403,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Timestamp);
         }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(TIMESTAMP);
+        }
     },
 
     @SerializedName("set<timeuuid>")
@@ -354,6 +416,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Timeuuid);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(TIMEUUID);
         }
     },
 
@@ -364,6 +431,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Uuid);
         }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(UUID);
+        }
     },
 
     @SerializedName("set<varint>")
@@ -372,6 +444,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareSet(expected, actual, this, Varint);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new SetType(VAR_INT);
         }
     },
 
@@ -382,6 +459,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Varchar);
         }
+
+        @Override
+        public CqlType getType() {
+            return new ListType(PrimitiveType.VARCHAR);
+        }
     },
 
     @SerializedName("list<ascii>")
@@ -390,6 +472,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Ascii);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new ListType(ASCII);
         }
     },
 
@@ -400,6 +487,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Text);
         }
+        @Override
+        public CqlType getType() {
+            return new ListType(TEXT);
+        }
     },
 
     @SerializedName("list<bigint>")
@@ -408,6 +499,10 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Bigint);
+        }
+        @Override
+        public CqlType getType() {
+            return new ListType(BIG_INT);
         }
     },
 
@@ -418,6 +513,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Blob);
         }
+        @Override
+        public CqlType getType() {
+            return new ListType(BLOB);
+        }
     },
 
     @SerializedName("list<boolean>")
@@ -426,6 +525,10 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Boolean);
+        }
+        @Override
+        public CqlType getType() {
+            return new ListType(BOOLEAN);
         }
     },
 
@@ -436,6 +539,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Decimal);
         }
+        @Override
+        public CqlType getType() {
+            return new ListType(DECIMAL);
+        }
     },
 
     @SerializedName("list<double>")
@@ -444,6 +551,10 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Double);
+        }
+        @Override
+        public CqlType getType() {
+            return new ListType(DOUBLE);
         }
     },
 
@@ -454,6 +565,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Float);
         }
+        @Override
+        public CqlType getType() {
+            return new ListType(FLOAT);
+        }
     },
 
     @SerializedName("list<inet>")
@@ -462,6 +577,10 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Inet);
+        }
+        @Override
+        public CqlType getType() {
+            return new ListType(INET);
         }
     },
 
@@ -472,6 +591,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Int);
         }
+        @Override
+        public CqlType getType() {
+            return new ListType(INT);
+        }
     },
 
     @SerializedName("list<timestamp>")
@@ -480,6 +603,10 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Timestamp);
+        }
+        @Override
+        public CqlType getType() {
+            return new ListType(TIMESTAMP);
         }
     },
 
@@ -490,6 +617,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Timeuuid);
         }
+        @Override
+        public CqlType getType() {
+            return new ListType(TIMEUUID);
+        }
     },
 
     @SerializedName("list<uuid>")
@@ -498,6 +629,10 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Uuid);
+        }
+        @Override
+        public CqlType getType() {
+            return new ListType(UUID);
         }
     },
 
@@ -508,6 +643,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareList(expected, actual, this, Varint);
         }
+        @Override
+        public CqlType getType() {
+            return new ListType(VAR_INT);
+        }
     },
 
     @SerializedName("map<varchar,varchar>")
@@ -515,6 +654,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Varchar, Varchar);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.VARCHAR, PrimitiveType.VARCHAR);
         }
     },
 
@@ -524,6 +668,11 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Varchar, Text);
         }
+
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.VARCHAR, PrimitiveType.TEXT);
+        }
     },
 
     @SerializedName("map<varchar,ascii>")
@@ -531,6 +680,11 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Varchar, Ascii);
+        }
+
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.VARCHAR, PrimitiveType.ASCII);
         }
     },
 
@@ -540,6 +694,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Text, Varchar);
         }
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.TEXT, PrimitiveType.VARCHAR);
+        }
     },
 
     @SerializedName("map<text,text>")
@@ -547,6 +705,10 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Text, Text);
+        }
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.TEXT, PrimitiveType.TEXT);
         }
     },
 
@@ -556,6 +718,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Text, Ascii);
         }
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.TEXT, PrimitiveType.ASCII);
+        }
     },
 
     @SerializedName("map<ascii,varchar>")
@@ -563,6 +729,10 @@ public enum ColumnTypes {
         @Override
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Ascii, Varchar);
+        }
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.ASCII, PrimitiveType.VARCHAR);
         }
     },
 
@@ -572,6 +742,10 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Ascii, Text);
         }
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.ASCII, PrimitiveType.TEXT);
+        }
     },
 
     @SerializedName("map<ascii,ascii>")
@@ -580,16 +754,18 @@ public enum ColumnTypes {
         public boolean equals(Object expected, Object actual) {
             return compareMap(expected, actual, this, Ascii, Ascii);
         }
+        @Override
+        public CqlType getType() {
+            return new MapType(PrimitiveType.ASCII, PrimitiveType.ASCII);
+        }
     }
     ;
+    private CqlType cqlType;
 
-    //todo make abstract
-    public boolean equals(Object expected, Object actual) {
-        return false;
-    }
+    abstract public boolean equals(Object expected, Object actual);
 
     public CqlType getType() {
-        return PrimitiveType.ASCII;
+        return PrimitiveType.fromName(this.name().toLowerCase());
     }
 
 
@@ -666,7 +842,7 @@ public enum ColumnTypes {
 
         if (expected instanceof String) {
             try {
-                return UUID.fromString(expected.toString()).equals(UUID.fromString(actual.toString()));
+                return java.util.UUID.fromString(expected.toString()).equals(java.util.UUID.fromString(actual.toString()));
             } catch (Exception e) {
                 throw throwInvalidType(expected, actual, columnTypes);
             }

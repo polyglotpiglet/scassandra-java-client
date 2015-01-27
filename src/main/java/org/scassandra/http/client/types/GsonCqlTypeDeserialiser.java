@@ -4,9 +4,12 @@ import com.google.gson.*;
 
 import java.lang.reflect.Type;
 
-public class CqlTypeDeserialiser implements JsonDeserializer<CqlType> {
+public class GsonCqlTypeDeserialiser implements JsonDeserializer<CqlType> {
+
+    private CqlTypeFactory cqlTypeFactory = new CqlTypeFactory();
+
     @Override
     public CqlType deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        return null;
+        return cqlTypeFactory.buildType(json.getAsString());
     }
 }
