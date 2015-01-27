@@ -4,16 +4,9 @@ apply plugin: 'signing'
 apply plugin: 'maven'
 
 buildscript {
-    repositories {
-        jcenter()
-        maven {
-            name 'JFrog OSS snapshot repo'
-            url  'https://oss.jfrog.org/oss-snapshot-local/'
-        }
-    }
+    repositories { jcenter() }
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
-        classpath 'me.champeau.gradle:antlr4-gradle-plugin:0.1'
     }
 }
 
@@ -170,3 +163,8 @@ shadowJar {
 
     }
 }
+
+install.dependsOn shadowJar
+uploadArchives.dependsOn shadowJar
+
+
