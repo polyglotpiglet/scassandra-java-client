@@ -90,7 +90,7 @@ public final class PrimingRequest {
         public PrimingRequestBuilder withColumnTypes(Map<String, ColumnTypes> types) {
             List<ColumnMetadata> columnMetadata = new ArrayList<ColumnMetadata>();
             for (Map.Entry<String, ColumnTypes> entry : types.entrySet()) {
-                columnMetadata.add(new ColumnMetadata(entry.getKey(), entry.getValue().getType()));
+                columnMetadata.add(ColumnMetadata.column(entry.getKey(), entry.getValue().getType()));
             }
             this.columnTypesMeta = columnMetadata;
             return this;

@@ -6,7 +6,11 @@ public class ColumnMetadata {
     private final String name;
     private final CqlType type;
 
-    public ColumnMetadata(String name, CqlType type) {
+    public static ColumnMetadata column(String name, CqlType type) {
+        return new ColumnMetadata(name, type);
+    }
+
+    private ColumnMetadata(String name, CqlType type) {
         this.name = name;
         this.type = type;
     }
