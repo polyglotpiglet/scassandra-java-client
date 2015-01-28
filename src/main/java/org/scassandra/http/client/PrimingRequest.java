@@ -37,8 +37,8 @@ public final class PrimingRequest {
         }
 
         private Consistency[] consistency;
-        private ColumnTypes[] variableTypes;
         private List<ColumnMetadata> columnTypesMeta;
+        private List<CqlType> variableTypesMeta;
         private String query;
         private String queryPattern;
         private List<Map<String, ?>> rows;
@@ -55,7 +55,6 @@ public final class PrimingRequest {
             return this;
         }
 
-
         public PrimingRequestBuilder withFixedDelay(long fixedDelay) {
             this.fixedDelay = fixedDelay;
             return this;
@@ -65,7 +64,6 @@ public final class PrimingRequest {
             this.rows = rows;
             return this;
         }
-
 
         @SafeVarargs
         public final PrimingRequestBuilder withRows(Map<String, ? extends Object>... rows) {
@@ -83,6 +81,11 @@ public final class PrimingRequest {
             return this;
         }
 
+        public PrimingRequestBuilder withColumnTypes(ColumnMetadata... columnMetadata) {
+            this.columnTypesMeta = Arrays.asList(columnMetadata);
+            return this;
+        }
+
         /**
          * @deprecated Use ColumnMetadata instead. This will be removed in version 1.0
          */
@@ -96,23 +99,26 @@ public final class PrimingRequest {
             return this;
         }
 
-        public PrimingRequestBuilder withColumnTypes(ColumnMetadata... columnMetadata) {
-            this.columnTypesMeta = Arrays.asList(columnMetadata);
-            return this;
-        }
-
         /**
-         * @deprecated Use ColumnMetadata instead. This will be removed in version 1.0
+         * @deprecated Use CqlType instead. This will be removed in version 1.0
          */
         @Deprecated
         public PrimingRequestBuilder withVariableTypes(ColumnTypes... variableTypes) {
-            this.variableTypes = variableTypes;
+            List<CqlType> variableTypesMeta = new ArrayList<CqlType>();
+            for (ColumnTypes variableType : variableTypes) {
+                variableTypesMeta.add(variableType.getType());
+            }
+            this.variableTypesMeta = variableTypesMeta;
+            return this;
+        }
+        public PrimingRequestBuilder withVariableTypes(CqlType... variableTypes) {
+            this.variableTypesMeta = Arrays.asList(variableTypes);
             return this;
         }
 
         public PrimingRequest build() {
 
-            if (PrimeType.QUERY.equals(this.type) && this.variableTypes != null) {
+            if (PrimeType.QUERY.equals(this.type) && this.variableTypesMeta != null) {
                 throw new IllegalStateException("Variable types only applicable for a prepared statement prime. Not a query prime");
             }
 
@@ -131,7 +137,7 @@ public final class PrimingRequest {
             if (result == Result.success && rows == null) {
                 rowsDefaultedToEmptyForSuccess = Collections.emptyList();
             }
-            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypesMeta, variableTypes, fixedDelay);
+            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypesMeta, variableTypesMeta, fixedDelay);
         }
     }
 
@@ -146,7 +152,7 @@ public final class PrimingRequest {
     private final When when;
     private final Then then;
 
-    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ?>> rows, Result result, List<ColumnMetadata> columnTypes, ColumnTypes[] variableTypes, Long fixedDelay) {
+    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ?>> rows, Result result, List<ColumnMetadata> columnTypes, List<CqlType> variableTypes, Long fixedDelay) {
         this.primeType = primeType;
         this.when = new When(query, queryPattern, consistency);
         this.then = new Then(rows, result, columnTypes, variableTypes, fixedDelay);
@@ -189,13 +195,13 @@ public final class PrimingRequest {
     }
 
     public final static class Then {
-        private final ColumnTypes[] variable_types;
+        private final List<CqlType> variable_types;
         private final List<Map<String, ? extends Object>> rows;
         private final Result result;
         private final Map<String, CqlType> column_types;
         private final Long fixedDelay;
 
-        private Then(List<Map<String, ?>> rows, Result result, List<ColumnMetadata> column_types, ColumnTypes[] variable_types, Long fixedDelay) {
+        private Then(List<Map<String, ?>> rows, Result result, List<ColumnMetadata> column_types, List<CqlType> variable_types, Long fixedDelay) {
             this.rows = rows;
             this.result = result;
             this.variable_types = variable_types;
@@ -211,30 +217,37 @@ public final class PrimingRequest {
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(rows, result, column_types, fixedDelay) + Arrays.hashCode(variable_types);
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Then then = (Then) o;
+
+            if (column_types != null ? !column_types.equals(then.column_types) : then.column_types != null)
+                return false;
+            if (fixedDelay != null ? !fixedDelay.equals(then.fixedDelay) : then.fixedDelay != null) return false;
+            if (result != then.result) return false;
+            if (rows != null ? !rows.equals(then.rows) : then.rows != null) return false;
+            if (variable_types != null ? !variable_types.equals(then.variable_types) : then.variable_types != null)
+                return false;
+
+            return true;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-            final Then other = (Then) obj;
-            return Arrays.equals(this.variable_types, other.variable_types) &&
-                    Objects.equals(this.rows, other.rows) &&
-                    Objects.equals(this.result, other.result) &&
-                    Objects.equals(this.column_types, other.column_types) &&
-                    Objects.equals(this.fixedDelay, other.fixedDelay);
+        public int hashCode() {
+            int result1 = variable_types != null ? variable_types.hashCode() : 0;
+            result1 = 31 * result1 + (rows != null ? rows.hashCode() : 0);
+            result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
+            result1 = 31 * result1 + (column_types != null ? column_types.hashCode() : 0);
+            result1 = 31 * result1 + (fixedDelay != null ? fixedDelay.hashCode() : 0);
+            return result1;
         }
 
         @Override
         public String toString() {
             return "Then{" +
-                    "variable_types=" + Arrays.toString(variable_types) +
+                    "variable_types=" + variable_types +
                     ", rows=" + rows +
                     ", result=" + result +
                     ", column_types=" + column_types +
@@ -242,7 +255,7 @@ public final class PrimingRequest {
                     '}';
         }
 
-        public ColumnTypes[] getVariableTypes() {
+        public List<CqlType> getVariableTypes() {
             return variable_types;
         }
 
