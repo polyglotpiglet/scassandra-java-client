@@ -16,6 +16,7 @@
 package org.scassandra.http.client;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -24,6 +25,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.scassandra.cql.CqlType;
+import org.scassandra.http.client.types.GsonCqlTypeDeserialiser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +72,10 @@ public class ActivityClient {
 
     public static ActivityClientBuilder builder() { return new ActivityClientBuilder(); }
 
-    private Gson gson = new Gson();
+    private Gson gson = new GsonBuilder()
+            .registerTypeAdapter(CqlType.class, new GsonCqlTypeDeserialiser())
+            .create();
+
     private CloseableHttpClient httpClient = HttpClients.createDefault();
     private final String connectionUrl;
     private final String queryUrl;

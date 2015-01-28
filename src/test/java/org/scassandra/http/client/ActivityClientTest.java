@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static org.scassandra.cql.PrimitiveType.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -179,7 +180,7 @@ public class ActivityClientTest {
         assertEquals("ONE", singleExecution.getConsistency());
         assertEquals("select * from people where name = ?", singleExecution.getPreparedStatementText());
         assertEquals(Arrays.asList("Chris"), singleExecution.getVariables());
-        assertEquals(Arrays.asList(ColumnTypes.Text), singleExecution.getVariableTypes());
+        assertEquals(Arrays.asList(TEXT), singleExecution.getVariableTypes());
     }
 
     @Test(expected = ActivityRequestFailed.class)

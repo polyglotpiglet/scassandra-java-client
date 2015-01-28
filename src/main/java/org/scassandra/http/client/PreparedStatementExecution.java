@@ -15,6 +15,11 @@
  */
 package org.scassandra.http.client;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
+import org.scassandra.cql.CqlType;
+import org.scassandra.server.cqlmessages.types.CqlText;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,9 +28,9 @@ public final class PreparedStatementExecution {
     private final String preparedStatementText;
     private final String consistency;
     private final List<Object> variables;
-    private List<ColumnTypes> variableTypes;
+    private List<CqlType> variableTypes;
 
-    private PreparedStatementExecution(String preparedStatementText, String consistency, List<Object> variables, List<ColumnTypes> variableTypes) {
+    private PreparedStatementExecution(String preparedStatementText, String consistency, List<Object> variables, List<CqlType> variableTypes) {
         this.preparedStatementText = preparedStatementText;
         this.consistency = consistency;
         this.variables = variables;
@@ -94,20 +99,20 @@ public final class PreparedStatementExecution {
     /**
      * Don't use this builder for creating PreparedStatementExecutions to match against.
      *
-     * @param variableTypes The types of the varialbes
+     * @param variableTypes The types of the variables
      * @return A PreparedStatementExecutionBuilder
      */
     public static PreparedStatementExecutionBuilder builder(ColumnTypes... variableTypes) {
         return new PreparedStatementExecutionBuilder(Arrays.asList(variableTypes));
     }
 
-    public List<ColumnTypes> getVariableTypes() {
+    public List<CqlType> getVariableTypes() {
         return variableTypes;
     }
 
     public static class PreparedStatementExecutionBuilder {
 
-        private List<ColumnTypes> variableTypes = Collections.emptyList();
+        private List<CqlType> variableTypes = Collections.emptyList();
         private String preparedStatementText;
         private String consistency = "ONE";
         private List<Object> variables = Collections.emptyList();
@@ -115,8 +120,21 @@ public final class PreparedStatementExecution {
         private PreparedStatementExecutionBuilder() {
         }
 
+        /**
+         * @deprecated Use CqlType instead
+         */
+        @Deprecated
         public PreparedStatementExecutionBuilder(List<ColumnTypes> variableTypes) {
-            this.variableTypes = variableTypes;
+            this.variableTypes = FluentIterable.from(variableTypes).transform(new Function<ColumnTypes, CqlType>() {
+                @Override
+                public CqlType apply(ColumnTypes input) {
+                    return input.getType();
+                }
+            }).toList();
+        }
+
+        public PreparedStatementExecutionBuilder(CqlType... variableTypes) {
+            this.variableTypes = Arrays.asList(variableTypes);
         }
 
         /**

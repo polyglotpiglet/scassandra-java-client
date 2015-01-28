@@ -1,20 +1,13 @@
 package org.scassandra.matchers;
 
-import org.apache.commons.codec.binary.Hex;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
-import org.scassandra.http.client.ColumnTypes;
+import org.scassandra.cql.CqlType;
 import org.scassandra.http.client.PreparedStatementExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedStatementExecution>> {
 
@@ -67,7 +60,7 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
      */
     private boolean doesPreparedStatementMatch(PreparedStatementExecution actualPreparedStatementExecution) {
 
-        List<ColumnTypes> variableTypes = actualPreparedStatementExecution.getVariableTypes();
+        List<CqlType> variableTypes = actualPreparedStatementExecution.getVariableTypes();
         List<Object> actualVariables = actualPreparedStatementExecution.getVariables();
         if (variableTypes.size() != actualVariables.size()) {
             throw new IllegalArgumentException(String.format("Server has returned a different number of variables to variable types: variables %s variableTypes %s", actualVariables, variableTypes));
@@ -89,7 +82,7 @@ public class PreparedStatementMatcher extends TypeSafeMatcher<List<PreparedState
 
             Object expectedVariable = expectedVariables.get(index);
             Object actualVariable = actualVariables.get(index);
-            ColumnTypes columnType = variableTypes.get(index);
+            CqlType columnType = variableTypes.get(index);
             if (!columnType.equals(expectedVariable, actualVariable)) return false;
 
         }

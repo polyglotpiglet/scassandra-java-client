@@ -28,6 +28,9 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 import static org.scassandra.cql.PrimitiveType.*;
+import static org.scassandra.cql.SetType.*;
+import static org.scassandra.cql.MapType.*;
+import static org.scassandra.cql.ListType.*;
 
 /**
  * This won't be an enum in version 1.0 where we'll make a braking change to represent
@@ -250,7 +253,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(VARCHAR);
+            return set(VARCHAR);
         }
     },
 
@@ -265,7 +268,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(ASCII);
+            return set(ASCII);
         }
     },
 
@@ -279,7 +282,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(TEXT);
+            return set(TEXT);
         }
     },
 
@@ -293,7 +296,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(BIG_INT);
+            return set(BIG_INT);
         }
     },
 
@@ -307,7 +310,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(BLOB);
+            return set(BLOB);
         }
     },
 
@@ -321,7 +324,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(BOOLEAN);
+            return set(BOOLEAN);
         }
     },
 
@@ -335,7 +338,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(DECIMAL);
+            return set(DECIMAL);
         }
     },
 
@@ -349,7 +352,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(DOUBLE);
+            return set(DOUBLE);
         }
     },
 
@@ -363,7 +366,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(FLOAT);
+            return set(FLOAT);
         }
     },
 
@@ -377,7 +380,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(INET);
+            return set(INET);
         }
     },
 
@@ -391,7 +394,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(INT);
+            return set(INT);
         }
     },
 
@@ -405,7 +408,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(TIMESTAMP);
+            return set(TIMESTAMP);
         }
     },
 
@@ -419,7 +422,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(TIMEUUID);
+            return set(TIMEUUID);
         }
     },
 
@@ -433,7 +436,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(UUID);
+            return set(UUID);
         }
     },
 
@@ -447,7 +450,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new SetType(VAR_INT);
+            return set(VAR_INT);
         }
     },
 
@@ -461,7 +464,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new ListType(PrimitiveType.VARCHAR);
+            return list(PrimitiveType.VARCHAR);
         }
     },
 
@@ -475,7 +478,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new ListType(ASCII);
+            return list(ASCII);
         }
     },
 
@@ -488,7 +491,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(TEXT);
+            return list(TEXT);
         }
     },
 
@@ -501,7 +504,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(BIG_INT);
+            return list(BIG_INT);
         }
     },
 
@@ -514,7 +517,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(BLOB);
+            return list(BLOB);
         }
     },
 
@@ -527,7 +530,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(BOOLEAN);
+            return list(BOOLEAN);
         }
     },
 
@@ -540,7 +543,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(DECIMAL);
+            return list(DECIMAL);
         }
     },
 
@@ -553,7 +556,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(DOUBLE);
+            return list(DOUBLE);
         }
     },
 
@@ -566,7 +569,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(FLOAT);
+            return list(FLOAT);
         }
     },
 
@@ -579,7 +582,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(INET);
+            return list(INET);
         }
     },
 
@@ -592,7 +595,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(INT);
+            return list(INT);
         }
     },
 
@@ -605,7 +608,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(TIMESTAMP);
+            return list(TIMESTAMP);
         }
     },
 
@@ -618,7 +621,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(TIMEUUID);
+            return list(TIMEUUID);
         }
     },
 
@@ -631,7 +634,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(UUID);
+            return list(UUID);
         }
     },
 
@@ -644,7 +647,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new ListType(VAR_INT);
+            return list(VAR_INT);
         }
     },
 
@@ -657,7 +660,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.VARCHAR, PrimitiveType.VARCHAR);
+            return map(PrimitiveType.VARCHAR, PrimitiveType.VARCHAR);
         }
     },
 
@@ -670,7 +673,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.VARCHAR, PrimitiveType.TEXT);
+            return map(PrimitiveType.VARCHAR, PrimitiveType.TEXT);
         }
     },
 
@@ -683,7 +686,7 @@ public enum ColumnTypes {
 
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.VARCHAR, PrimitiveType.ASCII);
+            return map(PrimitiveType.VARCHAR, PrimitiveType.ASCII);
         }
     },
 
@@ -695,7 +698,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.TEXT, PrimitiveType.VARCHAR);
+            return map(PrimitiveType.TEXT, PrimitiveType.VARCHAR);
         }
     },
 
@@ -707,7 +710,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.TEXT, PrimitiveType.TEXT);
+            return map(PrimitiveType.TEXT, PrimitiveType.TEXT);
         }
     },
 
@@ -719,7 +722,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.TEXT, PrimitiveType.ASCII);
+            return map(PrimitiveType.TEXT, PrimitiveType.ASCII);
         }
     },
 
@@ -731,7 +734,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.ASCII, PrimitiveType.VARCHAR);
+            return map(PrimitiveType.ASCII, PrimitiveType.VARCHAR);
         }
     },
 
@@ -743,7 +746,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.ASCII, PrimitiveType.TEXT);
+            return map(PrimitiveType.ASCII, PrimitiveType.TEXT);
         }
     },
 
@@ -755,7 +758,7 @@ public enum ColumnTypes {
         }
         @Override
         public CqlType getType() {
-            return new MapType(PrimitiveType.ASCII, PrimitiveType.ASCII);
+            return map(PrimitiveType.ASCII, PrimitiveType.ASCII);
         }
     }
     ;
