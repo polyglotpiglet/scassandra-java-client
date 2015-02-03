@@ -2,6 +2,18 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'signing'
 apply plugin: 'maven'
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/groups/public"}
+    }
+    dependencies {
+        classpath 'com.github.townsfolk:gradle-release:1.2'
+    }
+}
+apply plugin: 'release'
+
+createReleaseTag.dependsOn uploadArchives
 
 buildscript {
     repositories { jcenter() }
@@ -113,7 +125,7 @@ uploadArchives {
 
 dependencies {
     compile('org.scassandra:scassandra-server_2.10:0.6.0')
-    compile 'org.scassandra:cql-antlr:0.1.0-SNAPSHOT'
+    compile 'org.scassandra:cql-antlr:0.1.0'
     compile 'org.apache.httpcomponents:httpclient:4.3.3'
     compile 'com.google.code.gson:gson:2.2.4'
     compile 'org.slf4j:slf4j-api:1.7.6'
