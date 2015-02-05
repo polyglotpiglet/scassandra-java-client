@@ -55,7 +55,6 @@ public final class PreparedStatementExecution {
                 "preparedStatementText='" + preparedStatementText + '\'' +
                 ", consistency='" + consistency + '\'' +
                 ", variables=" + variables +
-                ", variableTypes=" + variableTypes +
                 '}';
     }
 
