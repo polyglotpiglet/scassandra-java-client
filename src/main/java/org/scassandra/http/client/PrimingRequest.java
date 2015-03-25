@@ -15,8 +15,11 @@
  */
 package org.scassandra.http.client;
 
+import com.google.common.collect.ImmutableMap;
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import org.scassandra.cql.CqlType;
 import org.scassandra.http.client.types.ColumnMetadata;
+import org.scassandra.server.priming.ErrorConstants;
 
 import java.util.*;
 
@@ -44,6 +47,7 @@ public final class PrimingRequest {
         private List<Map<String, ?>> rows;
         private Result result = Result.success;
         private Long fixedDelay;
+        private Map<String, Object> config = new HashMap<String, Object>();
 
         public PrimingRequestBuilder withQuery(String query) {
             this.query = query;
@@ -83,6 +87,11 @@ public final class PrimingRequest {
 
         public PrimingRequestBuilder withColumnTypes(ColumnMetadata... columnMetadata) {
             this.columnTypesMeta = Arrays.asList(columnMetadata);
+            return this;
+        }
+
+        public PrimingRequestBuilder withConfig(ReadTimeoutConfig readTimeoutConfig) {
+            this.config.putAll(readTimeoutConfig.getProperties());
             return this;
         }
 
@@ -137,7 +146,7 @@ public final class PrimingRequest {
             if (result == Result.success && rows == null) {
                 rowsDefaultedToEmptyForSuccess = Collections.emptyList();
             }
-            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypesMeta, variableTypesMeta, fixedDelay);
+            return new PrimingRequest(type, query, queryPattern, consistencies, rowsDefaultedToEmptyForSuccess, result, columnTypesMeta, variableTypesMeta, fixedDelay, config);
         }
     }
 
@@ -152,10 +161,10 @@ public final class PrimingRequest {
     private final When when;
     private final Then then;
 
-    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ?>> rows, Result result, List<ColumnMetadata> columnTypes, List<CqlType> variableTypes, Long fixedDelay) {
+    private PrimingRequest(PrimingRequestBuilder.PrimeType primeType, String query, String queryPattern, List<Consistency> consistency, List<Map<String, ?>> rows, Result result, List<ColumnMetadata> columnTypes, List<CqlType> variableTypes, Long fixedDelay, Map<String, Object> config) {
         this.primeType = primeType;
         this.when = new When(query, queryPattern, consistency);
-        this.then = new Then(rows, result, columnTypes, variableTypes, fixedDelay);
+        this.then = new Then(rows, result, columnTypes, variableTypes, fixedDelay, config);
     }
 
     public When getWhen() {
@@ -200,12 +209,14 @@ public final class PrimingRequest {
         private final Result result;
         private final Map<String, CqlType> column_types;
         private final Long fixedDelay;
+        private final Map<String, Object> config;
 
-        private Then(List<Map<String, ?>> rows, Result result, List<ColumnMetadata> column_types, List<CqlType> variable_types, Long fixedDelay) {
+        private Then(List<Map<String, ?>> rows, Result result, List<ColumnMetadata> column_types, List<CqlType> variable_types, Long fixedDelay, Map<String, Object> config) {
             this.rows = rows;
             this.result = result;
             this.variable_types = variable_types;
             this.fixedDelay = fixedDelay;
+            this.config = config;
             if (column_types != null) {
                 this.column_types = new HashMap<String, CqlType>();
                 for (ColumnMetadata column_type : column_types) {
@@ -225,6 +236,7 @@ public final class PrimingRequest {
 
             if (column_types != null ? !column_types.equals(then.column_types) : then.column_types != null)
                 return false;
+            if (config != null ? !config.equals(then.config) : then.config != null) return false;
             if (fixedDelay != null ? !fixedDelay.equals(then.fixedDelay) : then.fixedDelay != null) return false;
             if (result != then.result) return false;
             if (rows != null ? !rows.equals(then.rows) : then.rows != null) return false;
@@ -241,6 +253,7 @@ public final class PrimingRequest {
             result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
             result1 = 31 * result1 + (column_types != null ? column_types.hashCode() : 0);
             result1 = 31 * result1 + (fixedDelay != null ? fixedDelay.hashCode() : 0);
+            result1 = 31 * result1 + (config != null ? config.hashCode() : 0);
             return result1;
         }
 
@@ -252,6 +265,7 @@ public final class PrimingRequest {
                     ", result=" + result +
                     ", column_types=" + column_types +
                     ", fixedDelay=" + fixedDelay +
+                    ", config=" + config +
                     '}';
         }
 
@@ -341,5 +355,29 @@ public final class PrimingRequest {
         read_request_timeout,
         unavailable,
         write_request_timeout
+    }
+
+    public static abstract class Config {
+       abstract  Map<String, ?> getProperties();
+    }
+    public static class ReadTimeoutConfig extends Config {
+        private final int receivedAcknowledgements;
+        private final int requiredAcknowledgements;
+        private final boolean dataRetrieved;
+
+        public ReadTimeoutConfig(int receivedAcknowledgements, int requiredAcknowledgements, boolean dataRetrieved) {
+            this.receivedAcknowledgements = receivedAcknowledgements;
+            this.requiredAcknowledgements = requiredAcknowledgements;
+            this.dataRetrieved = dataRetrieved;
+        }
+
+        @Override
+        Map<String, ?> getProperties() {
+            return ImmutableMap.of(
+                    ErrorConstants.ReceivedResponse(), String.valueOf(this.receivedAcknowledgements),
+                    ErrorConstants.RequiredResponse(), String.valueOf(this.requiredAcknowledgements),
+                    ErrorConstants.DataPresent(), String.valueOf(this.dataRetrieved)
+            );
+        }
     }
 }

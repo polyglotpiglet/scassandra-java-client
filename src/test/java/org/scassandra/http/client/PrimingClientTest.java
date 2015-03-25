@@ -175,14 +175,18 @@ public class PrimingClientTest {
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.read_request_timeout)
+                .withConfig(new PrimingRequest.ReadTimeoutConfig(1, 2, false))
                 .build();
         //when
         underTest.primeQuery(pr);
+
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"}," +
-                        "\"then\":{\"result\":\"read_request_timeout\"}}")));
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"result\":\"read_request_timeout\",\n" +
+                        "  \"config\": {\"error.received_responses\":\"1\",\n" +
+                        "    \"error.required_responses\":\"2\",\n" +
+                        "    \"error.data_present\":\"false\"}}}")));
     }
 
     @Test

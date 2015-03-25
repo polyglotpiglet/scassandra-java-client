@@ -24,7 +24,7 @@ import static org.scassandra.cql.PrimitiveType.*;
 import static org.scassandra.cql.SetType.set;
 
 /**
- * This won't be an enum in version 1.0 where we'll make a braking change to represent
+ * This won't be an enum in version 1.0 where we'll make a breaking change to represent
  * types using classes like Jackson
  *
  * @deprecated Use CqlType instead.
