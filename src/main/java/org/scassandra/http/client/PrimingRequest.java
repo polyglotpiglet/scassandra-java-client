@@ -117,6 +117,7 @@ public final class PrimingRequest {
             this.variableTypesMeta = variableTypesMeta;
             return this;
         }
+
         public PrimingRequestBuilder withVariableTypes(CqlType... variableTypes) {
             this.variableTypesMeta = Arrays.asList(variableTypes);
             return this;

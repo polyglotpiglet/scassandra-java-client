@@ -48,26 +48,29 @@ public class PrimingClient {
         private String host = "localhost";
         private int port = 8043;
 
-        private PrimingClientBuilder() {}
+        private PrimingClientBuilder() {
+        }
 
-        public PrimingClientBuilder withHost(String host){
+        public PrimingClientBuilder withHost(String host) {
             this.host = host;
             return this;
         }
 
-        public PrimingClientBuilder withPort(int port){
+        public PrimingClientBuilder withPort(int port) {
             this.port = port;
             return this;
         }
 
-        public PrimingClient build(){
+        public PrimingClient build() {
             return new PrimingClient(this.host, this.port);
         }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PrimingClient.class);
 
-    public static PrimingClientBuilder builder() { return new PrimingClientBuilder(); }
+    public static PrimingClientBuilder builder() {
+        return new PrimingClientBuilder();
+    }
 
     private Gson gson = new GsonBuilder()
             .registerTypeAdapter(CqlType.class, new GsonCqlTypeSerialiser())
@@ -126,7 +129,7 @@ public class PrimingClient {
         return httpGetPrimingRequests(primeQueryUrl);
     }
 
-    public void clearAllPrimes(){
+    public void clearAllPrimes() {
         clearQueryPrimes();
         clearPreparedPrimes();
     }
@@ -159,7 +162,7 @@ public class PrimingClient {
         }
     }
 
-    private void httpDelete(String url){
+    private void httpDelete(String url) {
 
         HttpDelete delete = new HttpDelete(url);
         CloseableHttpResponse httpResponse = null;

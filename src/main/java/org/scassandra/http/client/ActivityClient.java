@@ -51,26 +51,29 @@ public class ActivityClient {
         private String host = "localhost";
         private int port = 8043;
 
-        private ActivityClientBuilder() {}
+        private ActivityClientBuilder() {
+        }
 
-        public ActivityClientBuilder withHost(String host){
+        public ActivityClientBuilder withHost(String host) {
             this.host = host;
             return this;
         }
 
-        public ActivityClientBuilder withPort(int port){
+        public ActivityClientBuilder withPort(int port) {
             this.port = port;
             return this;
         }
 
-        public ActivityClient build(){
+        public ActivityClient build() {
             return new ActivityClient(this.host, this.port);
         }
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActivityClient.class);
 
-    public static ActivityClientBuilder builder() { return new ActivityClientBuilder(); }
+    public static ActivityClientBuilder builder() {
+        return new ActivityClientBuilder();
+    }
 
     private Gson gson = new GsonBuilder()
             .registerTypeAdapter(CqlType.class, new GsonCqlTypeDeserialiser())
@@ -113,6 +116,7 @@ public class ActivityClient {
             throw new ActivityRequestFailed(REQUEST_FOR_QUERIES_FAILED, e);
         }
     }
+
     /**
      * Retrieves all the connections that have been sent to the configured Scassandra server.
      *
@@ -138,14 +142,14 @@ public class ActivityClient {
      * Deletes all the recorded connections from the configured Scassandra server.
      */
     public void clearConnections() {
-        httpDelete(connectionUrl, "Clearing of connections failed" );
+        httpDelete(connectionUrl, "Clearing of connections failed");
     }
 
     /**
      * Deletes all the recorded queries from the configured Scassandra server.
      */
     public void clearQueries() {
-        httpDelete(queryUrl, "Clearing of queries failed" );
+        httpDelete(queryUrl, "Clearing of queries failed");
     }
 
     /**
@@ -158,7 +162,7 @@ public class ActivityClient {
     /**
      * Deletes the recorded prepared statement executions, recorded queries and recorded connections.
      */
-    public void clearAllRecordedActivity(){
+    public void clearAllRecordedActivity() {
         clearConnections();
         clearQueries();
         clearPreparedStatementExecutions();
@@ -167,8 +171,9 @@ public class ActivityClient {
     /**
      * Retrieves the recorded prepared statement executions. Note this the executions, not the prepare
      * calls your applications makes.
-     *
+     * <p/>
      * If you haven't primed the prepared statement then the variable types will be empty.
+     *
      * @return PreparedStatementExecution
      */
     public List<PreparedStatementExecution> retrievePreparedStatementExecutions() {
