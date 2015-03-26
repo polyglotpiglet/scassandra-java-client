@@ -15,11 +15,8 @@
  */
 package org.scassandra.http.client;
 
-import com.google.common.collect.ImmutableMap;
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import org.scassandra.cql.CqlType;
 import org.scassandra.http.client.types.ColumnMetadata;
-import org.scassandra.server.priming.ErrorConstants;
 
 import java.util.*;
 
@@ -90,7 +87,7 @@ public final class PrimingRequest {
             return this;
         }
 
-        public PrimingRequestBuilder withConfig(ReadTimeoutConfig readTimeoutConfig) {
+        public PrimingRequestBuilder withConfig(Config readTimeoutConfig) {
             this.config.putAll(readTimeoutConfig.getProperties());
             return this;
         }
@@ -216,7 +213,8 @@ public final class PrimingRequest {
             this.result = result;
             this.variable_types = variable_types;
             this.fixedDelay = fixedDelay;
-            this.config = config;
+            this.config = config.isEmpty() ? null : config;
+
             if (column_types != null) {
                 this.column_types = new HashMap<String, CqlType>();
                 for (ColumnMetadata column_type : column_types) {
@@ -357,27 +355,4 @@ public final class PrimingRequest {
         write_request_timeout
     }
 
-    public static abstract class Config {
-       abstract  Map<String, ?> getProperties();
-    }
-    public static class ReadTimeoutConfig extends Config {
-        private final int receivedAcknowledgements;
-        private final int requiredAcknowledgements;
-        private final boolean dataRetrieved;
-
-        public ReadTimeoutConfig(int receivedAcknowledgements, int requiredAcknowledgements, boolean dataRetrieved) {
-            this.receivedAcknowledgements = receivedAcknowledgements;
-            this.requiredAcknowledgements = requiredAcknowledgements;
-            this.dataRetrieved = dataRetrieved;
-        }
-
-        @Override
-        Map<String, ?> getProperties() {
-            return ImmutableMap.of(
-                    ErrorConstants.ReceivedResponse(), String.valueOf(this.receivedAcknowledgements),
-                    ErrorConstants.RequiredResponse(), String.valueOf(this.requiredAcknowledgements),
-                    ErrorConstants.DataPresent(), String.valueOf(this.dataRetrieved)
-            );
-        }
-    }
 }

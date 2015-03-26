@@ -175,7 +175,7 @@ public class PrimingClientTest {
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.read_request_timeout)
-                .withConfig(new PrimingRequest.ReadTimeoutConfig(1, 2, false))
+                .withConfig(new ReadTimeoutConfig(1, 2, false))
                 .build();
         //when
         underTest.primeQuery(pr);
@@ -210,17 +210,22 @@ public class PrimingClientTest {
     public void testPrimingQueryWriteRequestTimeout() {
         //given
         stubFor(post(urlEqualTo(PRIME_QUERY_PATH)).willReturn(aResponse().withStatus(200)));
+        WriteTimeoutConfig writeTimeoutConfig = new WriteTimeoutConfig(WriteTypePrime.BATCH, 2, 3);
         PrimingRequest pr = PrimingRequest.queryBuilder()
                 .withQuery("select * from people")
                 .withResult(PrimingRequest.Result.write_request_timeout)
+                .withConfig(writeTimeoutConfig)
                 .build();
         //when
         underTest.primeQuery(pr);
         //then
         verify(postRequestedFor(urlEqualTo(PRIME_QUERY_PATH))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
-                .withRequestBody(equalTo("{\"when\":{\"query\":\"select * from people\"}," +
-                        "\"then\":{\"result\":\"write_request_timeout\"}}")));
+                .withRequestBody(equalToJson("{\"when\":{\"query\":\"select * from people\"},\"then\":{\"result\":\"write_request_timeout\", \"config\": {\n" +
+                        "  \"error.required_responses\":\"3\",\n" +
+                        "  \"error.received_responses\":\"2\",\n" +
+                        "  \"error.write_type\":\"BATCH\"\n" +
+                        "}}}")));
     }
 
     @Test(expected = PrimeFailedException.class)
