@@ -171,7 +171,7 @@ public class ActivityClient {
     /**
      * Retrieves the recorded prepared statement executions. Note this the executions, not the prepare
      * calls your applications makes.
-     * <p/>
+     *
      * If you haven't primed the prepared statement then the variable types will be empty.
      *
      * @return PreparedStatementExecution
